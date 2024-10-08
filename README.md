@@ -73,7 +73,7 @@ In the root directory of 5p now execute
 
 ```shell
 conan install . --build=missing
-conan build .
+conan build . --build=missing
 ```
 
 The first command fetches all dependencies, and if they are not available, it tries to compile them. For this task, a CMake installation is required (check potential error logs).
