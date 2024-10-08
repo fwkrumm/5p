@@ -69,7 +69,7 @@ should yield
 
 conancenter: https://center.conan.io [Verify SSL: True, Enabled: True].
 
-In the root directory of 5p now execute
+In the root directory of 5p (after e.g. `git clone https://github.com/NotAvailable-EUR/5p.git && cd 5p`) execute
 
 ```shell
 conan install . --build=missing
