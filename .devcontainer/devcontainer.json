@@ -1,0 +1,50 @@
+{
+    "name": "Linux x64 DevContainer",
+    "dockerComposeFile": [ "./docker-compose.yml" ],
+    "service": "backend",
+    "workspaceFolder": "/workspace",
+
+    "runArgs": [
+        "--net=host",
+        "--add-host",
+        "host.docker.internal:host-gateway"
+    ],
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
+    "extensions": [
+        "ms-python.python",
+        "ms-azuretools.vscode-docker"
+    ],
+      
+    // Configure tool-specific properties.
+    "customizations": {
+        "vscode": {
+            // Add the IDs of vscode extensions you want installed when the container is created.
+            // compliant: vscode-docker
+            "extensions": [
+                "ms-azuretools.vscode-docker",     // docker
+                "ms-vscode.cpptools",              // C++, formatter
+                "ms-python.python",                // python
+                "timonwong.shellcheck"             // bash
+            ],
+            "settings": {
+                "extensions.verifySignature": false,
+                "editor.rulers": [
+                    72,
+                    99
+                ],
+                "C_Cpp.intelliSenseEngine": "Default",
+                "C_Cpp.errorSquiggles": "Enabled"
+            }
+        }
+    },
+    
+    "forwardPorts": [
+        49999
+    ],
+    "ports": [
+        "49999:49999/udp"
+    ],
+    "postCreateCommand": "echo 'DevContainer setup complete!'"
+}
