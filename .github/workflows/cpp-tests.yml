@@ -22,4 +22,4 @@ jobs:
       - name: Build with Conan
         run: |
           conan install . --build=requires
-          conan build .
+          conan build . --build=requires
