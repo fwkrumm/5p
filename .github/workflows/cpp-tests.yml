@@ -1,4 +1,4 @@
-name: P5_ShmLock
+name: CI_P5
 
 on: [push, pull_request]
 
