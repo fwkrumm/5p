@@ -88,7 +88,7 @@ The first command fetches all dependencies, and if they are not available, it tr
 After compilation you can run the program via (on Linux omit the .exe of course)
 
 ```
-5p.exe --path C:\path\to\test\trace.pcapng
+5p.exe C:\path\to\test\trace.pcapng
 ```
 
 which reads the packets from the trace and forwards them via udp to 127.0.0.1:49999 (default).
@@ -96,7 +96,7 @@ which reads the packets from the trace and forwards them via udp to 127.0.0.1:49
 This parameters can be adjusted via
 
 ```
-5p.exe --path C:\path\to\test\trace.pcapng --ip 192.168.65.254 --port 40000
+5p.exe C:\path\to\test\trace.pcapng --ip 192.168.65.254 --port 40000
 ```
 
 Note that for other ports you might need to forward that ports; cf. .devcontainer/devcontainer.json
