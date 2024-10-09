@@ -53,15 +53,13 @@ bool Reader::NextPackage(pcpp::Packet& packet) {
 }
 
 DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
-    // timestamp not used yet, could/will be used to determine real-time replay
-    // speed
-    /*
-    uint64_t timestamp_ns =
-        packet.getRawPacket()->getPacketTimeStamp().tv_sec * 1e9 +
-        packet.getRawPacket()->getPacketTimeStamp().tv_nsec;    // ns
-    */
 
     ppppp::DataPacket dataPacket;
+
+    // timestamp of package in ms
+    dataPacket.timestamp =
+        packet.getRawPacket()->getPacketTimeStamp().tv_sec * 1e3 +
+        static_cast<uint64_t>(packet.getRawPacket()->getPacketTimeStamp().tv_nsec / 1e6);
 
     // extract payload
     pcpp::PayloadLayer* payloadLayer =

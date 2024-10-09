@@ -1,5 +1,7 @@
 #pragma once
 
+#include <thread>
+
 #include "5p/cli.hpp"
 #include "5p/logging.hpp"
 #include "5p/pcapreader.hpp"
