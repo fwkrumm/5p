@@ -19,7 +19,6 @@ jobs:
       - name: Configure Conan
         run: conan profile detect
 
-      - name: Build with Conan
-        run: |
-          conan install . --build=missing
-          conan build . --build=missing
+      - name: Create (i.e. compile) by using Conan
+        run:
+          conan create . --build=missing

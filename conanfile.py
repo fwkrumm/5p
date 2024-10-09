@@ -1,12 +1,13 @@
+import os
 from conan import ConanFile
 from conan.tools.cmake import CMake, CMakeToolchain, cmake_layout
 from conan.tools.files import copy
 
 class PPPPP(ConanFile):
     name = "5p"
-    version = "1.0.0"
+    version = "0.0.1"
     settings = "os", "compiler", "build_type", "arch"
-    exports_sources = "src/*"
+    exports_sources = "*"
     generators = "CMakeDeps"
 
     def requirements(self):
@@ -15,8 +16,8 @@ class PPPPP(ConanFile):
         self.requires("cli11/2.4.2")
 
     def build_requirements(self):
-        self.test_requires("gtest/1.15.0")
-        self.tool_requires("cppcheck/2.15.0")
+        #self.test_requires("gtest/1.15.0") # not yet used
+        #self.tool_requires("cppcheck/2.15.0") # not yet used
         self.tool_requires("cmake/3.30.1")
 
     def layout(self):
@@ -32,11 +33,19 @@ class PPPPP(ConanFile):
         cmake.build()
 
     def package(self):
-        cmake = CMake(self)
-        cmake.install()
+        # deploy binary
+        copy(self, "bin/*", src=self.source_folder,
+             dst=os.path.join(self.package_folder, "bin"),
+             keep_path=False)
+        # deploy project license file
+        copy(self, "LICENSE.txt", src=self.source_folder,
+             dst=os.path.join(self.package_folder, "licenses", self.name),
+             keep_path=False)
 
     def package_info(self):
-        pass
-
-    def imports(self):
-        copy(self, "license*", dst="licenses", folder=True, ignore_case=True)
+        # deploy license files of dependencies
+        for name, dep in self.dependencies.items():
+            copy(self, "*license*",
+                 src=dep.package_folder,
+                 dst=os.path.join(self.package_folder, "licenses", name.ref.name),
+                 ignore_case=True)
