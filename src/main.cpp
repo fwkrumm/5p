@@ -30,8 +30,7 @@ int main(int argc, char** argv) {
     }
 
     // init sender
-    sender::DataSender sender(config.protocol, config.ip,
-                              config.port);    // for testing only udp
+    sender::DataSender sender(config.protocol, config.ip, config.port);
     if (!sender.Init()) {
         LOG_ERROR << "socket init failed.";
         return static_cast<int>(returns::ReturnCodes::SOCKET_FAILURE);
