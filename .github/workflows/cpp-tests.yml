@@ -20,6 +20,5 @@ jobs:
         run: conan profile detect
 
       - name: Build with Conan
-        run: |
-          conan install . --build=missing
-          conan build . --build=missing
+        run:
+          conan create . --build=missing
