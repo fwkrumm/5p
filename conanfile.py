@@ -16,7 +16,7 @@ class PPPPP(ConanFile):
         self.requires("cli11/2.4.2")
 
     def build_requirements(self):
-        #self.test_requires("gtest/1.15.0") # not yet used
+        self.test_requires("gtest/1.15.0") # not yet used
         #self.tool_requires("cppcheck/2.15.0") # not yet used
         self.tool_requires("cmake/3.30.1")
 
@@ -31,6 +31,8 @@ class PPPPP(ConanFile):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
+        cmake.ctest(cli_args=["--output-on-failure"])
+
 
     def package(self):
         # deploy binary
