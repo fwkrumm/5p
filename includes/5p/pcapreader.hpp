@@ -28,6 +28,7 @@ enum class ProtocolType { INIT_UNSPECIFIED = 0, TCP = 1, UDP = 2 };
 struct DataPacket {
     uint16_t payloadLength = 0U;
     uint8_t* payload = nullptr;
+    uint64_t timestamp = 0U;
 };
 
 // LEGACY only used to identify protocol types when the target protocol

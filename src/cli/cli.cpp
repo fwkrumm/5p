@@ -40,6 +40,18 @@ int GetParameters(const int argc, char** const argv, config& cfg) {
         "UDP. Default is " +
             std::to_string(static_cast<uint16_t>(cfg.protocol)));
 
+    app.add_option(
+        "--sleep", cfg.sleep,
+        "select sleep time between samples. -1 means use live "
+        "time (within clock precision) Default is " +
+            std::to_string(cfg.sleep));
+
+    app.add_option(
+        "--skip", cfg.skip,
+        "skecify number of samples to be skipped at "
+        "the begining of the file. Default is " +
+            std::to_string(cfg.skip));
+
     // prase commands
     auto rc = WrapReturnValue(app, argc, argv);
 

@@ -27,12 +27,20 @@ struct config {
     // log level
     logging_5p::LogLevel level;
 
+    // skip samples
+    unsigned int skip;
+
+    // sleep time in ms;
+    int sleep;
+
     // specify default values here
     config()
         : level(logging_5p::LogLevel::INFO_LEVEL),
           ip("127.0.0.1"),
           port(49999),
-          protocol(ppppp::ProtocolType::UDP) {}
+          protocol(ppppp::ProtocolType::UDP),
+          sleep(-1),
+          skip(0U){}
 };
 
 /*
