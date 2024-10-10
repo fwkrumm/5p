@@ -29,6 +29,7 @@ struct DataPacket {
     uint16_t payloadLength = 0U;
     uint8_t* payload = nullptr;
     uint64_t timestamp = 0U;
+    uint16_t port = 0U;
 };
 
 // LEGACY only used to identify protocol types when the target protocol

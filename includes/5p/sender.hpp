@@ -30,6 +30,11 @@ class DataSender {
     bool Init();
 
     /*
+     * return if sender is initialized 
+     */
+    const bool IsInitialized() const;
+
+    /*
      * Send data
      * @param data: data to send
      * @param size: size of data

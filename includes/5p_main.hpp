@@ -1,6 +1,7 @@
 #pragma once
 
 #include <thread>
+#include <unordered_map>
 
 #include "5p/cli.hpp"
 #include "5p/logging.hpp"

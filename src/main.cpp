@@ -29,13 +29,18 @@ int main(int argc, char** argv) {
         return static_cast<int>(returns::ReturnCodes::INVALID_FILTER);
     }
 
-    // init sender
-    sender::DataSender sender(config.protocol, config.ip, config.port);
-    if (!sender.Init()) {
-        LOG_ERROR << "socket init failed.";
-        return static_cast<int>(returns::ReturnCodes::SOCKET_FAILURE);
+    // for each uint16_t port a sender
+    // TODO enable this also for different protocols? i.e. nested map?
+    std::unordered_map<uint16_t, sender::DataSender*> senders;
+    
+    if (config.port > 0U) {
+        senders[config.port] = new sender::DataSender(config.protocol, config.ip, config.port);
+        if (!senders[config.port]->Init()) {
+            LOG_ERROR << "socket init on port " << config.port << " failed.";
+            return static_cast<int>(returns::ReturnCodes::SOCKET_FAILURE);
+        }
     }
-
+    
     // read packets from pcap file
     pcpp::Packet packet;
     uint64_t lastDataPacketTimestamp = 0U;
@@ -54,24 +59,60 @@ int main(int argc, char** argv) {
         // extract data packet
         ppppp::DataPacket dataPacket = reader.ToDataPacket(packet);
 
-        // check if sleep interval as been specified
-        if (config.sleep == -1 && lastDataPacketTimestamp > 0U) {
-            // time sleep according to data packet
-            auto diffBetweenSamples =
-                dataPacket.timestamp - lastDataPacketTimestamp;
-            LOG_DEBUG << "according to data packet diff, sleeping "
-                      << diffBetweenSamples << " ms.";
-            std::this_thread::sleep_for(std::chrono::milliseconds(diffBetweenSamples));
-        } else if (config.sleep > 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(config.sleep));
-        } // else no sleep, as fast as possible
+        // check if sleep is desired; skip sleep until at least one packet was processed
+        if (lastDataPacketTimestamp > 0U) {
 
-        // send via socket
-        sender.Send(dataPacket.payload, dataPacket.payloadLength);
+            // sleep == -1 i.e. use approx. real time from packet timestamp
+            if (config.sleep == -1) {
+                // time sleep according to data packet
+                auto diffBetweenSamples =
+                    dataPacket.timestamp - lastDataPacketTimestamp;
+                LOG_DEBUG << "according to data packet diff, sleeping "
+                          << diffBetweenSamples << " ms.";
+                std::this_thread::sleep_for(
+                    std::chrono::milliseconds(diffBetweenSamples));
+            } else if (config.sleep > 0) {
+                std::this_thread::sleep_for(
+                    std::chrono::milliseconds(config.sleep));
+            }    
+            // else no sleep, as fast as possible
+        }
+
+        if (config.port > 0U) {
+            // port manually specified, socket init was checked before.
+            senders[config.port]->Send(dataPacket.payload,
+                                       dataPacket.payloadLength);
+        } else if (dataPacket.port > 0U) {
+
+            // TODO add function and exclude some ports
+
+            if (senders.count(dataPacket.port) == 0) {
+                // if key does not yet exist -> add socket for this port to map
+                senders[dataPacket.port] = new sender::DataSender(config.protocol,
+                                                                  config.ip,
+                                                                  dataPacket.port);
+                if (!senders[dataPacket.port]->Init()) {
+                    LOG_ERROR << "socket init on port " << dataPacket.port
+                              << " failed.";
+                    return static_cast<int>(
+                        returns::ReturnCodes::SOCKET_FAILURE);
+                }
+            }
+            
+            // send on data packet port
+            senders[dataPacket.port]->Send(dataPacket.payload,
+                                       dataPacket.payloadLength);
+        }
 
         // save timestamp from last data packet
         lastDataPacketTimestamp = dataPacket.timestamp;
     }
+
+    // clean up
+    for (auto& pair : senders) {
+        delete pair.second;
+    }
+    senders.clear();
 
     LOG_INFO << "ending cleanly";
     return static_cast<int>(returns::ReturnCodes::SUCCESS);

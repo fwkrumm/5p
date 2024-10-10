@@ -16,12 +16,12 @@ DataSender::DataSender(ppppp::ProtocolType protocol,
 bool DataSender::Init() {
     try {
         if (protocol_ == ppppp::ProtocolType::UDP) {
-            LOG_DEBUG << "trying to open udp socket";
+            LOG_DEBUG << "trying to open udp socket on port " << port_;
             udp_endpoint_ = boost::asio::ip::udp::endpoint(
                 boost::asio::ip::address::from_string(ip_), port_);
             udp_socket_.open(boost::asio::ip::udp::v4());
         } else if (protocol_ == ppppp::ProtocolType::TCP) {
-            LOG_DEBUG << "trying to connect tcp socket";
+            LOG_DEBUG << "trying to connect tcp socket on port " << port_;
             tcp_endpoint_ = boost::asio::ip::tcp::endpoint(
                 boost::asio::ip::address::from_string(ip_), port_);
             tcp_socket_.connect(tcp_endpoint_);
@@ -30,12 +30,19 @@ bool DataSender::Init() {
                 << "no protocol selected. Data will not be forwarded.";
             // will still return true since it is not an error; this might
             // be intentional
+            return true;
         }
-        return true;
+
+        // return actual value of socket has been opened
+        return IsInitialized();
     } catch (std::exception& e) {
         LOG_ERROR << "Error initializing DataSender: " << e.what();
     }
     return false;
+}
+
+const bool DataSender::IsInitialized() const {
+    return udp_socket_.is_open() || tcp_socket_.is_open();
 }
 
 int64_t DataSender::Send(uint8_t* data, uint16_t size) {

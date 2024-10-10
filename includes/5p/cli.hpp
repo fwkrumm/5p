@@ -37,7 +37,7 @@ struct config {
     config()
         : level(logging_5p::LogLevel::INFO_LEVEL),
           ip("127.0.0.1"),
-          port(49999),
+          port(0U),
           protocol(ppppp::ProtocolType::UDP),
           sleep(-1),
           skip(0U){}
