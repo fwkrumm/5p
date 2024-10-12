@@ -1,6 +1,6 @@
 #include <5p/pcapreader.hpp>
 
-using namespace ppppp;
+using namespace pcapreader;
 
 Reader::Reader() : reader_(nullptr) {}
 
@@ -52,9 +52,9 @@ bool Reader::NextPackage(pcpp::Packet& packet) {
     return true;
 }
 
-DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
+common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
 
-    ppppp::DataPacket dataPacket;
+   common::DataPacket dataPacket;
 
     // timestamp of package in ms
     dataPacket.timestamp =

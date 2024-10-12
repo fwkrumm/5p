@@ -2,7 +2,7 @@
 
 using namespace sender;
 
-DataSender::DataSender(ppppp::ProtocolType protocol,
+DataSender::DataSender(common::ProtocolType protocol,
                        const std::string& ip,
                        const uint16_t port)
             : protocol_(protocol),
@@ -15,22 +15,20 @@ DataSender::DataSender(ppppp::ProtocolType protocol,
 
 bool DataSender::Init() {
     try {
-        if (protocol_ == ppppp::ProtocolType::UDP) {
+        if (protocol_ ==common::ProtocolType::UDP) {
             LOG_DEBUG << "trying to open udp socket on port " << port_;
             udp_endpoint_ = boost::asio::ip::udp::endpoint(
                 boost::asio::ip::address::from_string(ip_), port_);
             udp_socket_.open(boost::asio::ip::udp::v4());
-        } else if (protocol_ == ppppp::ProtocolType::TCP) {
+        } else if (protocol_ ==common::ProtocolType::TCP) {
             LOG_DEBUG << "trying to connect tcp socket on port " << port_;
             tcp_endpoint_ = boost::asio::ip::tcp::endpoint(
                 boost::asio::ip::address::from_string(ip_), port_);
             tcp_socket_.connect(tcp_endpoint_);
         } else {
-            LOG_WARNING
-                << "no protocol selected. Data will not be forwarded.";
-            // will still return true since it is not an error; this might
-            // be intentional
-            return true;
+            LOG_ERROR
+                << "no valid protocol selected. Data will not be forwarded.";
+            // the return IsInitialized() step will return false
         }
 
         // return actual value of socket has been opened

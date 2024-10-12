@@ -3,7 +3,7 @@
 #include "5p_main.hpp"
 
 int main(int argc, char** argv) {
-    cli::config config;
+    common::config config;
 
     // get config from parameters
     auto rc = cli::GetParameters(argc, argv, config);
@@ -19,7 +19,7 @@ int main(int argc, char** argv) {
     logging_5p::SetUpLogger(config.level);
 
     // create reader and set pcap file
-    ppppp::Reader reader;
+    pcapreader::Reader reader;
     if (!reader.SetPcapFile(config.path)) {
         return static_cast<int>(returns::ReturnCodes::PCAP_FILE_NOT_FOUND);
     }
@@ -57,7 +57,7 @@ int main(int argc, char** argv) {
         }
 
         // extract data packet
-        ppppp::DataPacket dataPacket = reader.ToDataPacket(packet);
+       common::DataPacket dataPacket = reader.ToDataPacket(packet);
 
         // check if sleep is desired; skip sleep until at least one packet was processed
         if (lastDataPacketTimestamp > 0U) {

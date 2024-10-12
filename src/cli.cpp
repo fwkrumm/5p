@@ -7,7 +7,7 @@ static int WrapReturnValue(CLI::App& app, const int argc, char** const argv) {
     return 0; // if no parse error
 }
 
-int GetParameters(const int argc, char** const argv, config& cfg) {
+int GetParameters(const int argc, char** const argv, common::config& cfg) {
     CLI::App app{"Parameters"};
 
     // mandatory parameters

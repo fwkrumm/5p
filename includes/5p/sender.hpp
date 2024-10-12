@@ -4,12 +4,13 @@
 
 #include <boost/asio.hpp>
 
+#include "5p/common.hpp"
 #include "5p/pcapreader.hpp"
 
 namespace sender {
 
 class DataSender {
-   public:
+    public:
     /*
      * Constructor
      * @param protocol: protocol type to use
@@ -17,7 +18,7 @@ class DataSender {
      * @param port: port to send data to
      * @return DataSender object
      */
-    DataSender(ppppp::ProtocolType protocol, const std::string& ip,
+    DataSender(common::ProtocolType protocol, const std::string& ip,
                const uint16_t port);
 
     /*
@@ -49,7 +50,7 @@ class DataSender {
      */
     ~DataSender();
 
-   private:
+    private:
     /*
      * Send data over UDP
      * @param data: data to send
@@ -70,7 +71,7 @@ class DataSender {
     std::string ip_;
     uint16_t port_;
     // tcp or udp protocol
-    ppppp::ProtocolType protocol_;
+    common::ProtocolType protocol_;
 
     // boost asio objects
     boost::asio::io_context io_context_;

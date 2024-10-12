@@ -28,15 +28,15 @@ TEST(SampleTest, AssertionTrue) {
     char* argv[] = {arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10, arg11, arg12, arg13, arg14, arg15, arg16, nullptr};
 
     // create config struct
-    cli::config cfg;
+    common::config cfg;
     cli::GetParameters(argc, argv, cfg);
 
     // check if values correctly transformed to config struct
     ASSERT_EQ(cfg.sleep, 123);
     ASSERT_EQ(cfg.skip, 312);
     ASSERT_EQ(cfg.port, 9999);
-    ASSERT_EQ(cfg.protocol, ppppp::ProtocolType::TCP);
-    ASSERT_EQ(cfg.level, logging_5p::LogLevel::EXCEPTOIN_LEVEL); // log level 5
+    ASSERT_EQ(cfg.protocol,common::ProtocolType::TCP);
+    ASSERT_EQ(cfg.level, common::LogLevel::EXCEPTOIN_LEVEL); // log level 5
     ASSERT_EQ(cfg.ip, "8.8.8.8");
     ASSERT_EQ(cfg.path, "pcap_trace.pcapng");
     ASSERT_EQ(cfg.filter, "not a valid filter");

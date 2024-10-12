@@ -20,9 +20,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 set(SOURCE_FILES_5P
 	src/main.cpp
-    src/cli/cli.cpp
-	src/sender/sender.cpp
-    src/pcapreader/pcapreader.cpp
+    src/cli.cpp
+	src/sender.cpp
+    src/pcapreader.cpp
+    src/packethandler.cpp
 )
 
 add_executable(${PROJECT_NAME}
