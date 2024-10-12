@@ -94,8 +94,7 @@ int main(int argc, char** argv) {
                 if (!senders[dataPacket.port]->Init()) {
                     LOG_ERROR << "socket init on port " << dataPacket.port
                               << " failed.";
-                    return static_cast<int>(
-                        returns::ReturnCodes::SOCKET_FAILURE);
+                    return static_cast<int>(returns::ReturnCodes::SOCKET_FAILURE);
                 }
             }
             

@@ -9,6 +9,10 @@
 
 namespace sender {
 
+
+/*
+ * wrapper class to unify tcp and udp socket logic 
+ */
 class DataSender {
     public:
     /*
@@ -36,13 +40,18 @@ class DataSender {
     const bool IsInitialized() const;
 
     /*
+     * shutdown open socket (tcp or udp)
+     */
+    void Shutdown();
+
+    /*
      * Send data
      * @param data: data to send
      * @param size: size of data
      * @return number of bytes sent
      * @note: will return -1 if no socket is open
      */
-    int64_t Send(uint8_t* data, uint16_t size);
+    int64_t Send(const uint8_t* data, const uint16_t size);
 
     /*
      * Destructor
@@ -57,7 +66,7 @@ class DataSender {
      * @param size: size of data
      * @return number of bytes sent
      */
-    size_t SendUdp_(uint8_t* data, uint16_t size);
+     size_t SendUdp_(const uint8_t* data, const uint16_t size);
 
     /*
      * Send data over TCP
@@ -65,13 +74,15 @@ class DataSender {
      * @param size: size of data
      * @return number of bytes sent
      */
-    size_t SendTcp_(uint8_t* data, uint16_t size);
+     size_t SendTcp_(const uint8_t* data, const uint16_t size);
 
     // ip and port
     std::string ip_;
     uint16_t port_;
     // tcp or udp protocol
     common::ProtocolType protocol_;
+
+    bool initialized_;
 
     // boost asio objects
     boost::asio::io_context io_context_;
