@@ -5,6 +5,7 @@
 int main(int argc, char** argv) {
     common::config config;
 
+
     // get config from parameters
     auto rc = cli::GetParameters(argc, argv, config);
 
@@ -14,7 +15,7 @@ int main(int argc, char** argv) {
     } else if (rc != 0) {
         return static_cast<int>(returns::ReturnCodes::MISSING_PARAMETERS);
     }
-
+    
     // set log level
     logging_5p::SetUpLogger(config.level);
 
@@ -29,21 +30,24 @@ int main(int argc, char** argv) {
         return static_cast<int>(returns::ReturnCodes::INVALID_FILTER);
     }
 
-    // for each uint16_t port a sender
-    // TODO enable this also for different protocols? i.e. nested map?
-    std::unordered_map<uint16_t, sender::DataSender*> senders;
-    
-    if (config.port > 0U) {
-        senders[config.port] = new sender::DataSender(config.protocol, config.ip, config.port);
-        if (!senders[config.port]->Init()) {
-            LOG_ERROR << "socket init on port " << config.port << " failed.";
+    packethandler::PacketHandler packerHandler;
+    bool manual_socket =
+        config.port > 0 &&
+        config.protocol != common::ProtocolType::PACKET_PROTOCOLS;
+
+    // if port has specified and protocol -> init sender and lock adding of new
+    // senders since via parameters only one protocol + port has been specified
+    if (manual_socket) {
+        if (!packerHandler.AddSender(config.protocol, config.ip, config.port)) {
+            packerHandler.CleanMap();
             return static_cast<int>(returns::ReturnCodes::SOCKET_FAILURE);
         }
+        packerHandler.SetLockTo(true);
     }
+
     
     // read packets from pcap file
     pcpp::Packet packet;
-    uint64_t lastDataPacketTimestamp = 0U;
     uint64_t counter = 0U;
 
     sleepchecker::SleepChecker sleep_checker(config);
@@ -64,38 +68,25 @@ int main(int argc, char** argv) {
        // apply sleep if required
        sleep_checker.CheckSleep(dataPacket.timestamp); 
 
-        if (config.port > 0U) {
-            // port manually specified, socket init was checked before.
-            senders[config.port]->Send(dataPacket.payload,
-                                       dataPacket.payloadLength);
-        } else if (dataPacket.port > 0U) {
+       if (manual_socket) {
+           packerHandler.Send(config.protocol, config.port, dataPacket.payload,
+                              dataPacket.payloadLength);
+           continue;
+       } 
 
-            if (senders.count(dataPacket.port) == 0) {
-                // if key does not yet exist -> add socket for this port to map
-                senders[dataPacket.port] = new sender::DataSender(config.protocol,
-                                                                  config.ip,
-                                                                  dataPacket.port);
-                if (!senders[dataPacket.port]->Init()) {
-                    LOG_ERROR << "socket init on port " << dataPacket.port
-                              << " failed.";
-                    return static_cast<int>(returns::ReturnCodes::SOCKET_FAILURE);
-                }
-            }
-            
-            // send on data packet port
-            senders[dataPacket.port]->Send(dataPacket.payload,
-                                       dataPacket.payloadLength);
-        }
+       // use data packet socket
+       if (!packerHandler.DoesSenderExist(dataPacket.protocol,
+                                          dataPacket.port)) {
+           packerHandler.AddSender(dataPacket.protocol, config.ip,
+                                   dataPacket.port);
+       }
 
-        // save timestamp from last data packet
-        lastDataPacketTimestamp = dataPacket.timestamp;
+        // send
+        packerHandler.Send(dataPacket.protocol, dataPacket.port,
+                            dataPacket.payload,
+                            dataPacket.payloadLength);
+
     }
-
-    // clean up
-    for (auto& pair : senders) {
-        delete pair.second;
-    }
-    senders.clear();
 
     LOG_INFO << "ending cleanly";
     return static_cast<int>(returns::ReturnCodes::SUCCESS);

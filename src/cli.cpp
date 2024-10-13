@@ -37,7 +37,8 @@ int GetParameters(const int argc, char** const argv, common::config& cfg) {
     app.add_option(
         "--protocol", cfg.protocol,
         "select protocol to use for socket forwarding. 1 -- TCP, 2 -- "
-        "UDP. Default is " +
+        "UDP, 0 -- use packet protocol. Note that TCP needs a "
+        "receiver. Default is " +
             std::to_string(static_cast<uint16_t>(cfg.protocol)));
 
     app.add_option(

@@ -51,17 +51,35 @@ int64_t DataSender::Send(const uint8_t* data, const uint16_t size) {
     } else if (initialized_ && tcp_socket_.is_open()) {
         return static_cast<int64_t>(SendTcp_(data, size));
     }
+
     return -1; // no suitable socket open
 }
 
 void DataSender::Shutdown() {
     // close sockets
-    if (udp_socket_.is_open()) {
-        udp_socket_.close();
+
+    boost::system::error_code ec;
+    
+
+    try {
+        if (udp_socket_.is_open()) {
+            udp_socket_.close(ec);
+            LOG_DEBUG << "try closing udp on " << port_;
+            udp_socket_.shutdown(boost::asio::ip::udp::socket::shutdown_send);
+            udp_socket_.close();
+        }
+        if (tcp_socket_.is_open()) {
+            tcp_socket_.close(ec);
+            LOG_DEBUG << "try closing tcp on " << port_;
+            tcp_socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send);
+            tcp_socket_.close();
+        }
+        
+    } catch (std::exception& e) {
+        LOG_ERROR << "Error during Shutdown: " << e.what();
     }
-    if (tcp_socket_.is_open()) {
-        tcp_socket_.close();
-    }
+
+    io_context_.run();
 
     initialized_ = false;
 }
@@ -71,15 +89,25 @@ DataSender::~DataSender() {
 }
 
 size_t DataSender::SendUdp_(const uint8_t* data, const uint16_t size) {
-    auto rc =
-        udp_socket_.send_to(boost::asio::buffer(data, size), udp_endpoint_);
-    LOG_DEBUG << "UDP data sent successfully, rc : " << rc;
-    return rc;
+    try {
+        auto rc =
+            udp_socket_.send_to(boost::asio::buffer(data, size), udp_endpoint_);
+        LOG_DEBUG << "UDP data sent successfully, rc : " << rc;
+        return rc;
+    } catch (std::exception& e) {
+        LOG_ERROR << "Error sending via UDP: " << e.what();
+    }
+    return 0;
 }
 
 size_t DataSender::SendTcp_(const uint8_t* data, const uint16_t size) {
-    auto rc =
-        boost::asio::write(tcp_socket_, boost::asio::buffer(data, size));
-    LOG_DEBUG << "TCP data sent successfully, rc: " << rc;
-    return rc;
+    try {
+        auto rc =
+            boost::asio::write(tcp_socket_, boost::asio::buffer(data, size));
+        LOG_DEBUG << "TCP data sent successfully, rc: " << rc;
+        return rc;
+    } catch (std::exception& e) {
+        LOG_ERROR << "Error sending via TCP: " << e.what();
+    }
+    return 0;
 }

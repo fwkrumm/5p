@@ -9,7 +9,7 @@
 #include "5p/common.hpp"
 #include "5p/sender.hpp"
 
-namespace handler {
+namespace packethandler {
 
 class PacketHandler {
     public:

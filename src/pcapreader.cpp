@@ -68,7 +68,7 @@ common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
         dataPacket.payload = payloadLayer->getPayload();
         dataPacket.payloadLength =
             static_cast<uint16_t>(payloadLayer->getPayloadLen());
-
+        
         LOG_DEBUG << "extracted payload of size " << dataPacket.payloadLength;
     } else {
         LOG_WARNING << "no payload layer found.";
@@ -85,6 +85,7 @@ common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
                   << "; destination port : " << tcpLayer->getDstPort();
 
         dataPacket.port = tcpLayer->getDstPort();
+        dataPacket.protocol = common::ProtocolType::TCP;
     }
     else if (udpLayer != nullptr) {
 
@@ -92,6 +93,7 @@ common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
                   << "; destination port : " << udpLayer->getDstPort();
 
         dataPacket.port = udpLayer->getDstPort();
+        dataPacket.protocol = common::ProtocolType::UDP;
     } else {
         pcpp::Layer* layer = packet.getFirstLayer();
 

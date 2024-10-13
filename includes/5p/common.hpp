@@ -18,7 +18,7 @@ enum class LogLevel {
 };
 
 // protocol types for data send/forward
-enum class ProtocolType { INIT_UNSPECIFIED = 0, TCP = 1, UDP = 2 };
+enum class ProtocolType { PACKET_PROTOCOLS = 0, TCP = 1, UDP = 2 };
 
 // reduce data to protocal type and payload
 struct DataPacket {
@@ -26,6 +26,7 @@ struct DataPacket {
 	uint8_t* payload = nullptr;
 	uint64_t timestamp = 0U;
 	uint16_t port = 0U;
+    ProtocolType protocol = ProtocolType::PACKET_PROTOCOLS; // unspecified
 };
 
 // LEGACY only used to identify protocol types when the target protocol
