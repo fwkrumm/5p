@@ -24,6 +24,7 @@ set(SOURCE_FILES_5P
 	src/sender.cpp
     src/pcapreader.cpp
     src/packethandler.cpp
+    src/sleepchecker.cpp
 )
 
 add_executable(${PROJECT_NAME}

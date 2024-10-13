@@ -8,6 +8,7 @@
 #include "5p/logging.hpp"
 #include "5p/pcapreader.hpp"
 #include "5p/sender.hpp"
+#include "5p/sleepchecker.hpp"
 
 namespace returns {
 

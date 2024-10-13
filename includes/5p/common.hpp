@@ -64,10 +64,10 @@ struct config {
     LogLevel level;
 
     // skip samples
-    unsigned int skip;
+    uint32_t skip;
 
     // sleep time in ms;
-    int sleep;
+    int32_t sleep;
 
     // specify default values here
     config()

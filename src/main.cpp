@@ -46,6 +46,8 @@ int main(int argc, char** argv) {
     uint64_t lastDataPacketTimestamp = 0U;
     uint64_t counter = 0U;
 
+    sleepchecker::SleepChecker sleep_checker(config);
+
     // loop until end of file reached
     while (reader.NextPackage(packet)) {
 
@@ -59,32 +61,14 @@ int main(int argc, char** argv) {
         // extract data packet
        common::DataPacket dataPacket = reader.ToDataPacket(packet);
 
-        // check if sleep is desired; skip sleep until at least one packet was processed
-        if (lastDataPacketTimestamp > 0U) {
-
-            // sleep == -1 i.e. use approx. real time from packet timestamp
-            if (config.sleep == -1) {
-                // time sleep according to data packet
-                auto diffBetweenSamples =
-                    dataPacket.timestamp - lastDataPacketTimestamp;
-                LOG_DEBUG << "according to data packet diff, sleeping "
-                          << diffBetweenSamples << " ms.";
-                std::this_thread::sleep_for(
-                    std::chrono::milliseconds(diffBetweenSamples));
-            } else if (config.sleep > 0) {
-                std::this_thread::sleep_for(
-                    std::chrono::milliseconds(config.sleep));
-            }    
-            // else no sleep, as fast as possible
-        }
+       // apply sleep if required
+       sleep_checker.CheckSleep(dataPacket.timestamp); 
 
         if (config.port > 0U) {
             // port manually specified, socket init was checked before.
             senders[config.port]->Send(dataPacket.payload,
                                        dataPacket.payloadLength);
         } else if (dataPacket.port > 0U) {
-
-            // TODO add function and exclude some ports
 
             if (senders.count(dataPacket.port) == 0) {
                 // if key does not yet exist -> add socket for this port to map
