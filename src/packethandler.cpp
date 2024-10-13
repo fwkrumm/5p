@@ -3,11 +3,7 @@
 using namespace packethandler;
 
 PacketHandler::PacketHandler(const common::config& cfg) 
-    : static_ip_(cfg.ip), static_port_(cfg.port), static_protocol_type_(cfg.protocol) {
-
-    if (static_ip_ != common::INIT_IP) {
-        LOG_INFO << "ip persistently set to " << static_ip_;
-    }
+    : static_port_(cfg.port), static_protocol_type_(cfg.protocol) {
 
     if (static_port_ != common::INIT_PORT) {
         LOG_INFO << "port persistently set to " << static_port_;
@@ -36,8 +32,6 @@ bool PacketHandler::AddSender(const common::ProtocolType& protocol,
             : static_protocol_type_;
     uint16_t use_port =
         (static_port_ == common::INIT_PORT) ? port : static_port_;
-    std::string use_ip = (static_ip_ == common::INIT_IP) ? ip : static_ip_;
-
 
     bool does_sender_already_exist =
         senders_[use_protocol][use_port] != nullptr;
@@ -53,7 +47,7 @@ bool PacketHandler::AddSender(const common::ProtocolType& protocol,
     // the Init() function will return false if anything fails
 
     senders_[use_protocol][use_port] =
-        new sender::DataSender(use_protocol, use_ip, use_port);
+        new sender::DataSender(use_protocol, ip, use_port);
 
     auto rc = senders_[use_protocol][use_port]->Init();
     if (!rc) {

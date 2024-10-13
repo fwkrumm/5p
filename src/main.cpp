@@ -11,20 +11,11 @@
 // ToDo refactor
 int main(int argc, char** argv) {
 
-    // parameters -> config
-    common::config config;
-
-    // read network packets from pcap(ng) file
-    pcapreader::Reader reader;
-
-    
-
-    
 
     /*
      * Read Parameters and set up logger
      */
-
+    common::config config;
     auto rc = cli::GetParameters(argc, argv, config);
 
     // check for mandatory parameters; this also returns if --help is printed.
@@ -40,6 +31,8 @@ int main(int argc, char** argv) {
     /*
      * Create reader and apply filter if specified
      */
+    pcapreader::Reader reader;
+
     if (!reader.SetPcapFile(config.path)) {
         RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::PCAP_FILE_NOT_FOUND));
     }
@@ -49,20 +42,23 @@ int main(int argc, char** argv) {
 
     
     /*
-     * ToDO hide functionality in class?
-     * ToDo add that one can also specify ONLY port or ONLY protocol
+     * Create packet handler which forwards the data
+     * via boost sockets to desired destination
      */
-
-    // handle network packets -> boost sockets
     packethandler::PacketHandler packerHandler(config);
 
-    // read packets from pcap file
-    pcpp::Packet packet;
-    uint64_t counter = 0U;
-
+    /*
+     * Hides sleep check logic (whether specified or live
+     * timing of packets should be used)
+     */
     sleepchecker::SleepChecker sleep_checker(config);
 
-    // loop until end of file reached
+    /*
+     * read packets from pcap(ng) file. 
+     * Loop until end of file reached.
+     */
+    pcpp::Packet packet;
+    uint64_t counter = 0U;
     while (reader.NextPackage(packet)) {
 
         // skip samples if specified; not yet opimal since each
@@ -78,8 +74,8 @@ int main(int argc, char** argv) {
         // apply sleep if required
         sleep_checker.CheckSleep(dataPacket.timestamp); 
 
-        // send
-        if (packerHandler.AddSender(dataPacket.protocol, dataPacket.ip,
+        // send data
+        if (packerHandler.AddSender(dataPacket.protocol, config.ip,
                                     dataPacket.port)) {
             packerHandler.Send(dataPacket.protocol, dataPacket.port,
                                 dataPacket.payload, dataPacket.payloadLength);

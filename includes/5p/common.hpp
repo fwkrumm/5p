@@ -22,7 +22,6 @@ enum class ProtocolType { PACKET_PROTOCOLS = 0, TCP = 1, UDP = 2 };
 
 // reduce data to protocal type and payload
 struct DataPacket {
-    std::string ip = "";
 	uint16_t payloadLength = 0U;
 	uint8_t* payload = nullptr;
 	uint64_t timestamp = 0U;
@@ -47,7 +46,7 @@ pcpp::SLL, "SLL" }, { pcpp::PPPoE, "PPPoE" }, { pcpp::GRE, "GRE" }, { pcpp::SIP,
 };
 */
 
-const std::string INIT_IP = "";
+const std::string INIT_IP = "127.0.0.1";
 constexpr uint16_t INIT_PORT = 0U;
 constexpr ProtocolType INIT_PROTOCOL_TYPE = ProtocolType::PACKET_PROTOCOLS;
 

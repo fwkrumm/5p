@@ -1,7 +1,7 @@
 # **P**ca**PP**lus**P**lus**P**layer (5p)
 
-Please be aware that this software is still in the construction phase. As such, it may contain bugs, incomplete features, and other issues.
-Please proceed with caution.
+Please be aware that this software is still in the construction phase. As such, it may contain bugs, incomplete features, and other issues. Additionally, the master branch may undergo significant changes. However, each commit should still deliver its promised functionality. Please proceed with caution.
+
 This project is open-source, but it is your responsibility to verify and comply with any potential license issues.
 We recommend thoroughly reviewing the licenses of any dependencies or third-party code used in this project.
 

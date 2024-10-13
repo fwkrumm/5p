@@ -34,7 +34,6 @@ class PacketHandler {
 
     // any value specified from config 
     // will be statically set for all senders
-    std::string static_ip_;
     uint16_t static_port_;
     common::ProtocolType static_protocol_type_;
 	
