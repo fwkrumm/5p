@@ -52,6 +52,26 @@ class PacketHandler {
 
     private:
 
+    /*
+     * Check if the member variables of the port and protocol
+     * are set to default values if not, return the values
+     * set in the config i.e. the user
+     * specified values manually
+     * @param protocol: the protocol to test
+     * @param port: the port to test
+     * @return the protocol and port to use
+     *     for the sender
+     *    first: the protocol to use
+     *   second: the port to use
+     */
+    inline std::pair <common::ProtocolType, uint16_t> CheckPortAndProtocol(
+                            const common::ProtocolType& protocol, const uint16_t port) {
+        return {(static_protocol_type_ == common::INIT_PROTOCOL_TYPE)
+                    ? protocol
+                    : static_protocol_type_,
+                (static_port_ == common::INIT_PORT) ? port : static_port_};
+    }
+
     // for each protocol and port we have a DataSender
     std::unordered_map<common::ProtocolType, std::unordered_map<uint16_t, sender::DataSender*>> senders_;
 

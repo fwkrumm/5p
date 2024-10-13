@@ -26,15 +26,10 @@ bool PacketHandler::AddSender(const common::ProtocolType& protocol,
 
     // check if dynamic parameters from packet are supposed to be used or
     // statically set
-    common::ProtocolType use_protocol =
-        (static_protocol_type_ == common::INIT_PROTOCOL_TYPE)
-            ? protocol
-            : static_protocol_type_;
-    uint16_t use_port =
-        (static_port_ == common::INIT_PORT) ? port : static_port_;
+    auto check = CheckPortAndProtocol(protocol, port);
 
     bool does_sender_already_exist =
-        senders_[use_protocol][use_port] != nullptr;
+        senders_[check.first][check.second] != nullptr;
 
     if (does_sender_already_exist) {
         // sender already there
@@ -46,15 +41,19 @@ bool PacketHandler::AddSender(const common::ProtocolType& protocol,
     // but we let the sockets decide whether or not the parameters are valid
     // the Init() function will return false if anything fails
 
-    senders_[use_protocol][use_port] =
-        new sender::DataSender(use_protocol, ip, use_port);
+    senders_[check.first][check.second] =
+        new sender::DataSender(check.first, ip, check.second);
 
-    auto rc = senders_[use_protocol][use_port]->Init();
+    auto rc = senders_[check.first][check.second]->Init();
     if (!rc) {
-        senders_[use_protocol][use_port]->Shutdown();
-        delete senders_[use_protocol][use_port];
-        senders_[use_protocol][use_port] = nullptr;
+        senders_[check.first][check.second]->Shutdown();
+        delete senders_[check.first][check.second];
+        senders_[check.first][check.second] = nullptr;
     }
+
+    LOG_DEBUG << "Sender added for protocol " 
+        << static_cast<int32_t>(check.first) << " and " 
+        << ip << ":" << check.second << " returned: " << rc;
     return rc;
 }
 
@@ -63,8 +62,10 @@ int64_t PacketHandler::Send(const common::ProtocolType& protocol,
                             const uint16_t port,
                             const uint8_t* data, const uint16_t size) {
 
+    auto check = CheckPortAndProtocol(protocol, port);
+
     // check if sender has been initialized
-    auto& sender = senders_[protocol][port];
+    auto& sender = senders_[check.first][check.second];
 
     if (!sender) {
         return 0;

@@ -95,7 +95,8 @@ size_t DataSender::SendUdp_(const uint8_t* data, const uint16_t size) {
     try {
         auto rc =
             udp_socket_.send_to(boost::asio::buffer(data, size), udp_endpoint_);
-        LOG_DEBUG << "UDP data sent successfully, rc : " << rc;
+        LOG_DEBUG << "UDP data on " << ip_ << ":" << port_ 
+                  << " sent successfully, rc : " << rc;
         return rc;
     } catch (std::exception& e) {
         LogError_("Error sending via UDP.", e.what());
@@ -107,7 +108,8 @@ size_t DataSender::SendTcp_(const uint8_t* data, const uint16_t size) {
     try {
         auto rc =
             boost::asio::write(tcp_socket_, boost::asio::buffer(data, size));
-        LOG_DEBUG << "TCP data sent successfully, rc: " << rc;
+        LOG_DEBUG << "TCP data on" << ip_ << ":" << port_
+                  << " sent successfully, rc: " << rc;
         return rc;
     } catch (std::exception& e) {
         LogError_("Error sending via TCP.", e.what());

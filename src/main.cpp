@@ -77,8 +77,8 @@ int main(int argc, char** argv) {
         // send data
         if (packerHandler.AddSender(dataPacket.protocol, config.ip,
                                     dataPacket.port)) {
-            packerHandler.Send(dataPacket.protocol, dataPacket.port,
-                                dataPacket.payload, dataPacket.payloadLength);
+            auto rv = packerHandler.Send(dataPacket.protocol, dataPacket.port,
+                                    dataPacket.payload, dataPacket.payloadLength);
         }
         
 
