@@ -7,7 +7,7 @@ static int WrapReturnValue(CLI::App& app, const int argc, char** const argv) {
     return 0; // if no parse error
 }
 
-int GetParameters(const int argc, char** const argv, config& cfg) {
+int GetParameters(const int argc, char** const argv, common::config& cfg) {
     CLI::App app{"Parameters"};
 
     // mandatory parameters
@@ -37,7 +37,8 @@ int GetParameters(const int argc, char** const argv, config& cfg) {
     app.add_option(
         "--protocol", cfg.protocol,
         "select protocol to use for socket forwarding. 1 -- TCP, 2 -- "
-        "UDP. Default is " +
+        "UDP, 0 -- use packet protocol. Note that TCP needs a "
+        "receiver. Default is " +
             std::to_string(static_cast<uint16_t>(cfg.protocol)));
 
     app.add_option(

@@ -1,7 +1,7 @@
 # **P**ca**PP**lus**P**lus**P**layer (5p)
 
-Please be aware that this software is still in the construction phase. As such, it may contain bugs, incomplete features, and other issues.
-Please proceed with caution.
+Please be aware that this software is still in the construction phase. As such, it may contain bugs, incomplete features, and other issues. Additionally, the master branch may undergo significant changes. However, each commit should still deliver its promised functionality. Please proceed with caution.
+
 This project is open-source, but it is your responsibility to verify and comply with any potential license issues.
 We recommend thoroughly reviewing the licenses of any dependencies or third-party code used in this project.
 
@@ -91,15 +91,40 @@ After compilation you can run the program via (on Linux omit the .exe of course)
 5p.exe C:\path\to\test\trace.pcapng
 ```
 
-which reads the packets from the trace and forwards them via udp to 127.0.0.1:49999 (default).
+which reads the packets from the trace and forwards them to `127.0.0.1` with the original destination port and protocol (TCP/UDP) of the packets.
 
-This parameters can be adjusted via
+The parameters can be adjusted in the following way
 
+
+Adjust the ip so that all packets will be forwarde to that ip, still with original protocol and port
 ```
-5p.exe C:\path\to\test\trace.pcapng --ip 192.168.65.254 --port 40000
+5p.exe C:\path\to\test\trace.pcapng --ip 192.168.178.123
 ```
 
-Note that for other ports you might need to forward that ports; cf. .devcontainer/devcontainer.json
+Adjust the port, the packets will be send to default ip `127.0.0.1` but all will use port `49999` with the packet original protocol (TCP/UDP).
+```
+5p.exe C:\path\to\test\trace.pcapng --port 49999
+```
+
+Change the protocol, `2 --> UDP; 1 --> TCP`, i.e. all packets will be forwarde to `127.0.0.1` on their default port via UDP.
+```
+5p.exe C:\path\to\test\trace.pcapng --protocol 2
+```
+
+Of course you can combine this parameters, e.g. to forward all packets via UDP on port `49999` you can use
+```
+5p.exe C:\path\to\test\trace.pcapng --protocol 2 -- port 49999
+```
+
+
+Other parameters are 
+`--level` for the log level (logging to file always enabled on debug level)
+
+`--filter` to apply a filter in BPF format
+
+`--skip` to skip a certain number of packets
+
+`--sleep` to specify delay between packet send events
 
 
 For more details check
@@ -108,6 +133,10 @@ For more details check
 ```
 
 
+
+### Using the devcontainer on Windows
+
+It is possible to send the data from devcontainer to windows host and thus to not use any licensed dll files. 
 The ip address to receive the data on the host (Windows) you can extract via
 
 ```shell
@@ -123,6 +152,12 @@ PING host.docker.internal (192.168.65.254) 56(84) bytes of data.
 64 bytes from 192.168.65.254 (192.168.65.254): icmp_seq=2 ttl=63 time=0.491 ms
 ...
 
+```
+5p C:\path\to\test\trace.pcapng --ip 192.168.65.254
+```
+
+Note that for other ports you might need to forward that ports; cf. .devcontainer/devcontainer.json
+
 
 
 ### Test Data flow
@@ -134,8 +169,8 @@ In the root directory’s scripts folder, there are basic scripts for testing th
 <a name="todos"></a>
 ## ToDos
 
-- Create class to handle tasks more conveniently
 - More Precise sleep mechanism
 - Test usage on other setups (so far tested on Windows with Docker)
 - Nicer graphics (I don’t do frontend ...)
 - Add unit tests
+- Use consistent code style 

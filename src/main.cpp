@@ -2,46 +2,63 @@
 
 #include "5p_main.hpp"
 
-int main(int argc, char** argv) {
-    cli::config config;
+#define RETURN_WITH_CODE(rc)                      \
+    do {                                          \
+        LOG_INFO << "returning with code " << rc; \
+        return rc;                                \
+    } while (0)
 
-    // get config from parameters
+// ToDo refactor
+int main(int argc, char** argv) {
+
+
+    /*
+     * Read Parameters and set up logger
+     */
+    common::config config;
     auto rc = cli::GetParameters(argc, argv, config);
 
     // check for mandatory parameters; this also returns if --help is printed.
     if (rc == -1) {
-        return static_cast<int>(returns::ReturnCodes::HELP_PRINTED);
+        RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::HELP_PRINTED));
     } else if (rc != 0) {
-        return static_cast<int>(returns::ReturnCodes::MISSING_PARAMETERS);
+        RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::MISSING_PARAMETERS));
     }
-
-    // set log level
+    
     logging_5p::SetUpLogger(config.level);
 
-    // create reader and set pcap file
-    ppppp::Reader reader;
+
+    /*
+     * Create reader and apply filter if specified
+     */
+    pcapreader::Reader reader;
+
     if (!reader.SetPcapFile(config.path)) {
-        return static_cast<int>(returns::ReturnCodes::PCAP_FILE_NOT_FOUND);
+        RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::PCAP_FILE_NOT_FOUND));
     }
-
-    // apply filter if one was set
     if (config.filter != "" && !reader.ApplyFilter(config.filter)) {
-        return static_cast<int>(returns::ReturnCodes::INVALID_FILTER);
+        RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::INVALID_FILTER));
     }
 
-    // init sender
-    sender::DataSender sender(config.protocol, config.ip, config.port);
-    if (!sender.Init()) {
-        LOG_ERROR << "socket init failed.";
-        return static_cast<int>(returns::ReturnCodes::SOCKET_FAILURE);
-    }
+    
+    /*
+     * Create packet handler which forwards the data
+     * via boost sockets to desired destination
+     */
+    packethandler::PacketHandler packerHandler(config);
 
-    // read packets from pcap file
+    /*
+     * Hides sleep check logic (whether specified or live
+     * timing of packets should be used)
+     */
+    sleepchecker::SleepChecker sleep_checker(config);
+
+    /*
+     * read packets from pcap(ng) file. 
+     * Loop until end of file reached.
+     */
     pcpp::Packet packet;
-    uint64_t lastDataPacketTimestamp = 0U;
     uint64_t counter = 0U;
-
-    // loop until end of file reached
     while (reader.NextPackage(packet)) {
 
         // skip samples if specified; not yet opimal since each
@@ -52,27 +69,21 @@ int main(int argc, char** argv) {
         }
 
         // extract data packet
-        ppppp::DataPacket dataPacket = reader.ToDataPacket(packet);
+        common::DataPacket dataPacket = reader.ToDataPacket(packet);
 
-        // check if sleep interval as been specified
-        if (config.sleep == -1 && lastDataPacketTimestamp > 0U) {
-            // time sleep according to data packet
-            auto diffBetweenSamples =
-                dataPacket.timestamp - lastDataPacketTimestamp;
-            LOG_DEBUG << "according to data packet diff, sleeping "
-                      << diffBetweenSamples << " ms.";
-            std::this_thread::sleep_for(std::chrono::milliseconds(diffBetweenSamples));
-        } else if (config.sleep > 0) {
-            std::this_thread::sleep_for(std::chrono::milliseconds(config.sleep));
-        } // else no sleep, as fast as possible
+        // apply sleep if required
+        sleep_checker.CheckSleep(dataPacket.timestamp); 
 
-        // send via socket
-        sender.Send(dataPacket.payload, dataPacket.payloadLength);
+        // send data
+        if (packerHandler.AddSender(dataPacket.protocol, config.ip,
+                                    dataPacket.port)) {
+            auto rv = packerHandler.Send(dataPacket.protocol, dataPacket.port,
+                                    dataPacket.payload, dataPacket.payloadLength);
+        }
+        
 
-        // save timestamp from last data packet
-        lastDataPacketTimestamp = dataPacket.timestamp;
     }
 
-    LOG_INFO << "ending cleanly";
-    return static_cast<int>(returns::ReturnCodes::SUCCESS);
+    LOG_INFO << "ending with SUCCESS";
+    RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::SUCCESS));
 }

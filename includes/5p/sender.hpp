@@ -2,14 +2,20 @@
 
 #define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
+#include <string>
 #include <boost/asio.hpp>
 
+#include "5p/common.hpp"
 #include "5p/pcapreader.hpp"
 
 namespace sender {
 
+
+/*
+ * wrapper class to unify tcp and udp socket logic 
+ */
 class DataSender {
-   public:
+    public:
     /*
      * Constructor
      * @param protocol: protocol type to use
@@ -17,7 +23,7 @@ class DataSender {
      * @param port: port to send data to
      * @return DataSender object
      */
-    DataSender(ppppp::ProtocolType protocol, const std::string& ip,
+    DataSender(common::ProtocolType protocol, const std::string& ip,
                const uint16_t port);
 
     /*
@@ -30,13 +36,23 @@ class DataSender {
     bool Init();
 
     /*
+     * return if sender is initialized 
+     */
+    const bool IsInitialized() const;
+
+    /*
+     * shutdown open socket (tcp or udp)
+     */
+    void Shutdown();
+
+    /*
      * Send data
      * @param data: data to send
      * @param size: size of data
      * @return number of bytes sent
      * @note: will return -1 if no socket is open
      */
-    int64_t Send(uint8_t* data, uint16_t size);
+    int64_t Send(const uint8_t* data, const uint16_t size);
 
     /*
      * Destructor
@@ -44,14 +60,14 @@ class DataSender {
      */
     ~DataSender();
 
-   private:
+    private:
     /*
      * Send data over UDP
      * @param data: data to send
      * @param size: size of data
      * @return number of bytes sent
      */
-    size_t SendUdp_(uint8_t* data, uint16_t size);
+    size_t SendUdp_(const uint8_t* data, const uint16_t size);
 
     /*
      * Send data over TCP
@@ -59,13 +75,21 @@ class DataSender {
      * @param size: size of data
      * @return number of bytes sent
      */
-    size_t SendTcp_(uint8_t* data, uint16_t size);
+    size_t SendTcp_(const uint8_t* data, const uint16_t size);
+
+    /*
+     * small helper function to log an error message and automatically
+     * include specified ip and port
+     */
+    inline void LogError_(const std::string& msg, const char* err);
 
     // ip and port
     std::string ip_;
     uint16_t port_;
     // tcp or udp protocol
-    ppppp::ProtocolType protocol_;
+    common::ProtocolType protocol_;
+
+    bool initialized_;
 
     // boost asio objects
     boost::asio::io_context io_context_;

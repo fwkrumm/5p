@@ -1,6 +1,6 @@
 #include <5p/pcapreader.hpp>
 
-using namespace ppppp;
+using namespace pcapreader;
 
 Reader::Reader() : reader_(nullptr) {}
 
@@ -52,9 +52,9 @@ bool Reader::NextPackage(pcpp::Packet& packet) {
     return true;
 }
 
-DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
+common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
 
-    ppppp::DataPacket dataPacket;
+   common::DataPacket dataPacket;
 
     // timestamp of package in ms
     dataPacket.timestamp =
@@ -68,12 +68,46 @@ DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
         dataPacket.payload = payloadLayer->getPayload();
         dataPacket.payloadLength =
             static_cast<uint16_t>(payloadLayer->getPayloadLen());
-
+        
         LOG_DEBUG << "extracted payload of size " << dataPacket.payloadLength;
     } else {
         LOG_WARNING << "no payload layer found.";
-        // dataPacket.payloadLength = 0U; // already initialized to 0U
     }
+
+    // extract transport layer
+    pcpp::TcpLayer* tcpLayer = packet.getLayerOfType<pcpp::TcpLayer>();
+    pcpp::UdpLayer* udpLayer = packet.getLayerOfType<pcpp::UdpLayer>();
+
+    if (tcpLayer != nullptr) {
+
+        LOG_DEBUG << "protocol: tcp; source port: " << tcpLayer->getSrcPort()
+                  << "; destination port : " << tcpLayer->getDstPort();
+
+        dataPacket.port = tcpLayer->getDstPort();
+        dataPacket.protocol = common::ProtocolType::TCP;
+    }
+    else if (udpLayer != nullptr) {
+
+        LOG_DEBUG << "protocol: udp; source port : " << udpLayer->getSrcPort()
+                  << "; destination port : " << udpLayer->getDstPort();
+
+        dataPacket.port = udpLayer->getDstPort();
+        dataPacket.protocol = common::ProtocolType::UDP;
+    } else {
+        pcpp::Layer* layer = packet.getFirstLayer();
+
+        while (layer != nullptr)
+        {
+            pcpp::ProtocolType protocolType = layer->getProtocol();
+
+            LOG_DEBUG << "Unknown layer: " << layer->toString() 
+                      << " cannot extract port, if none has specified "
+                         "this data will not be forwarded.";
+
+            layer = layer->getNextLayer();
+        }
+    }
+    // else unknown protocol, target port remains 0U
 
     return dataPacket;
 }

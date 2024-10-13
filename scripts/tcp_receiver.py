@@ -17,12 +17,12 @@ def start_tcp_receiver(ip, port):
     try:
         print(f'Connection from {client_address}')
 
-        # Receive the data in small chunks and print it
+        # Receive the data in chunks and print it
         while True:
             data = connection.recv(1024)
             if data:
                 print(f'Received: {data}')
-            break
+            # break # use break here if you want to receive data only once
     finally:
         # Clean up the connection
         connection.close()

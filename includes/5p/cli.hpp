@@ -5,43 +5,11 @@
 #include <CLI/CLI.hpp>
 #include <string>
 
+#include "5p/common.hpp"
 #include "5p/logging.hpp"
 #include "5p/pcapreader.hpp"
 
 namespace cli {
-
-// gathers all important data for the program from parameters
-struct config {
-    // path to pcap(ng) file
-    std::string path;
-
-    // ip address and port to send data to
-    std::string ip;
-    uint16_t port;
-    // protocol to use for data sending/forwarding
-    ppppp::ProtocolType protocol;
-
-    // BPF filter for pcap replay
-    std::string filter;
-
-    // log level
-    logging_5p::LogLevel level;
-
-    // skip samples
-    unsigned int skip;
-
-    // sleep time in ms;
-    int sleep;
-
-    // specify default values here
-    config()
-        : level(logging_5p::LogLevel::INFO_LEVEL),
-          ip("127.0.0.1"),
-          port(49999),
-          protocol(ppppp::ProtocolType::UDP),
-          sleep(-1),
-          skip(0U){}
-};
 
 /*
  * Get parameters from command line; this function must be used by main.cpp
@@ -51,7 +19,7 @@ struct config {
  * @return 0 if successful, otherwise return value is determined
  *   by CLI11
  */
-int GetParameters(const int argc, char** const argv, config& cfg);
+int GetParameters(const int argc, char** const argv, common::config& cfg);
 
 /*
  * This function is a wrapper around CLI11_PARSE to catch if help was printed to

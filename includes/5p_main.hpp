@@ -1,11 +1,15 @@
 #pragma once
 
 #include <thread>
+#include <unordered_map>
 
+#include "5p/common.hpp"
 #include "5p/cli.hpp"
 #include "5p/logging.hpp"
 #include "5p/pcapreader.hpp"
 #include "5p/sender.hpp"
+#include "5p/sleepchecker.hpp"
+#include "5p/packethandler.hpp"
 
 namespace returns {
 
@@ -19,4 +23,4 @@ enum class ReturnCodes {
     SOCKET_FAILURE = 4
 };
 
-}    // namespace returns
+} // namespace returns

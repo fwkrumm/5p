@@ -17,42 +17,19 @@
 #include <iostream>
 #include <unordered_map>
 
+#include "5p/common.hpp"
 #include "5p/logging.hpp"
 
-namespace ppppp {
+namespace pcapreader {
 
-// protocol types for data send/forward
-enum class ProtocolType { INIT_UNSPECIFIED = 0, TCP = 1, UDP = 2 };
-
-// reduce data to protocal type and payload
-struct DataPacket {
-    uint16_t payloadLength = 0U;
-    uint8_t* payload = nullptr;
-    uint64_t timestamp = 0U;
-};
-
-// LEGACY only used to identify protocol types when the target protocol
-// was determined by packet protocol. At the moment since the protocol
-// is determined by the user, this is not needed anymore.
 /*
-// map number type to human-readable protocol type
-static std::unordered_map<pcpp::ProtocolType, std::string> protocolTypeToString
-= { { pcpp::Ethernet, "Ethernet" }, { pcpp::IPv4, "IPv4" }, { pcpp::IPv6, "IPv6"
-}, { pcpp::TCP, "TCP" }, { pcpp::UDP, "UDP" }, { pcpp::HTTP, "HTTP" }, {
-pcpp::ARP, "ARP" }, { pcpp::VLAN, "VLAN" }, { pcpp::ICMP, "ICMP" }, {
-pcpp::ICMPv6, "ICMPv6" }, { pcpp::DNS, "DNS" }, { pcpp::MPLS, "MPLS" }, {
-pcpp::SLL, "SLL" }, { pcpp::PPPoE, "PPPoE" }, { pcpp::GRE, "GRE" }, { pcpp::SIP,
-"SIP" }, { pcpp::SDP, "SDP" }, { pcpp::Radius, "Radius" }, { pcpp::DHCP, "DHCP"
-}, { pcpp::BGP, "BGP" },
-    // more available at pcapplusplus/ProtocolType.h
-};
-*/
-
+ * Reader class to read pcap files
+ */
 class Reader {
-   private:
+    private:
     pcpp::IFileReaderDevice* reader_;
 
-   public:
+    public:
     Reader();
     ~Reader();
 
@@ -86,7 +63,7 @@ class Reader {
      * @return DataPacket which contains protocol
      *       type and payload (+ its size)
      */
-    DataPacket ToDataPacket(const pcpp::Packet& packet);
+    common::DataPacket ToDataPacket(const pcpp::Packet& packet);
 };
 
 }    // namespace ppppp

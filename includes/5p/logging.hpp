@@ -13,6 +13,8 @@
 #include <chrono>
 #include <iostream>
 
+#include <5p/common.hpp>
+
 namespace logging = boost::log;
 namespace expr = boost::log::expressions;
 namespace keywords = boost::log::keywords;
@@ -41,17 +43,6 @@ inline const std::string filename(const char* path) {
 
 namespace logging_5p {
 
-// log levels
-enum class LogLevel {
-    DEBUG_LEVEL = 0,
-    ALSO_DEBUG_LEVEL = 1,
-    INFO_LEVEL = 2,
-    WARNING_LEVEL = 3,
-    ERROR_LEVEL = 4,
-    EXCEPTOIN_LEVEL = 5,
-    NONE_LEVEL = 6
-};
-
 // in case for throw log first and then throw
 #ifndef FLUSH_BEFORE_THROW
 #define FLUSH_BEFORE_THROW(EXCEPTION_TYPE, MESSAGE) \
@@ -62,7 +53,13 @@ enum class LogLevel {
     }
 #endif
 
-static void SetUpLogger(LogLevel level) {
+/*
+* Set up logger with file and console sink. log level to file
+* is always debug, log level to console is set by parameter.
+* @param level: minimum log level to be logged
+* @return void
+*/
+static void SetUpLogger(common::LogLevel level) {
     int64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
                             std::chrono::system_clock::now().time_since_epoch())
                             .count();
