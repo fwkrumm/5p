@@ -16,8 +16,8 @@ class PPPPP(ConanFile):
         self.requires("cli11/2.4.2")
 
     def build_requirements(self):
-        self.test_requires("gtest/1.15.0") # not yet used
-        #self.tool_requires("cppcheck/2.15.0") # not yet used
+        self.test_requires("gtest/1.15.0")
+        self.tool_requires("cppcheck/2.15.0")
         self.tool_requires("cmake/3.30.1")
 
     def layout(self):
@@ -32,6 +32,13 @@ class PPPPP(ConanFile):
         cmake.configure()
         cmake.build()
         cmake.ctest(cli_args=["--output-on-failure"])
+        # add includes so that headers are found
+        include1 = os.path.join(self.source_folder, "includes")
+
+        self.run(f"cppcheck --enable=all {self.source_folder} "\
+                f"-I {include1} "\
+                "--check-level=exhaustive "\
+                "--suppress=missingIncludeSystem -i .git/ -i build/ -i bin/")
 
 
     def package(self):

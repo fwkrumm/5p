@@ -10,12 +10,13 @@ namespace sleepchecker {
 
 
 /*
- * wrapper class to unify tcp and udp socket logic 
+ * SleepChecker class to check if sleep should be applied
+ * and if so, does it
  */
 class SleepChecker {
     public:
-    
-    SleepChecker(const common::config& cfg);
+
+    explicit SleepChecker(const common::config& cfg);
     ~SleepChecker();
 
     /*

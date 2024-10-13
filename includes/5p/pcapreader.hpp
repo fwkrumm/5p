@@ -22,12 +22,14 @@
 
 namespace pcapreader {
 
-
+/*
+ * Reader class to read pcap files
+ */
 class Reader {
-	private:
-	pcpp::IFileReaderDevice* reader_;
+    private:
+    pcpp::IFileReaderDevice* reader_;
 
-	public:
+    public:
     Reader();
     ~Reader();
 

@@ -17,13 +17,13 @@ RUN until apt-get install -y cmake; do \
     echo "Retrying..."; \
     sleep 1; \
     done
-	
+
 
 RUN until apt-get install -y iputils-ping; do \
     echo "Retrying..."; \
     sleep 1; \
     done
-	
+
 RUN until apt-get install -y net-tools; do \
     echo "Retrying..."; \
     sleep 1; \
@@ -33,27 +33,27 @@ RUN until apt-get install -y curl; do \
     echo "Retrying..."; \
     sleep 1; \
     done
-	
+
 RUN until apt-get install -y python3; do \
     echo "Retrying..."; \
     sleep 1; \
     done
-	
+
 RUN until apt-get install -y python3-pip; do \
     echo "Retrying..."; \
     sleep 1; \
     done
-	
+
 RUN until apt-get install -y clang-format; do \
     echo "Retrying..."; \
     sleep 1; \
     done
-	
+
 RUN until apt-get install -y clang-tidy; do \
     echo "Retrying..."; \
     sleep 1; \
     done
-	
+
 RUN rm -rf /var/lib/apt/lists/*
 
 WORKDIR /workspace

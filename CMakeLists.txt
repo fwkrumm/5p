@@ -19,9 +19,9 @@ find_package(GTest REQUIRED)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 set(SOURCE_FILES_5P
-	src/main.cpp
+    src/main.cpp
     src/cli.cpp
-	src/sender.cpp
+    src/sender.cpp
     src/pcapreader.cpp
     src/packethandler.cpp
     src/sleepchecker.cpp
@@ -41,29 +41,29 @@ add_executable(${TEST_NAME}
 )
 
 set(LIBRARIES_5P
-	CLI11::CLI11
+    CLI11::CLI11
     boost::boost
     PcapPlusPlus::PcapPlusPlus
 )
 
 set(INCLUDES_5P
-	${CMAKE_SOURCE_DIR}/includes
+    ${CMAKE_SOURCE_DIR}/includes
     ${PcapPlusPlus_INCLUDE_DIRS}
     ${Boost_INCLUDE_DIRS}
     ${CLI11_INCLUDE_DIRS}
 )
 
 target_link_libraries(${TEST_NAME}
-	gtest::gtest
-	${LIBRARIES_5P}
-	${PROJECT_NAME_LIB}
+    gtest::gtest
+    ${LIBRARIES_5P}
+    ${PROJECT_NAME_LIB}
 )
 
 target_link_libraries(${PROJECT_NAME}
     ${LIBRARIES_5P}
 )
 
-# includes redundant since otherwise vs studio 
+# includes redundant since otherwise vs studio
 # had problems with intellisense
 target_include_directories(${PROJECT_NAME} PRIVATE
     ${INCLUDES_5P}

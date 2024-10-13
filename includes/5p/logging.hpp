@@ -53,6 +53,12 @@ namespace logging_5p {
     }
 #endif
 
+/*
+* Set up logger with file and console sink. log level to file
+* is always debug, log level to console is set by parameter.
+* @param level: minimum log level to be logged
+* @return void
+*/
 static void SetUpLogger(common::LogLevel level) {
     int64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
                             std::chrono::system_clock::now().time_since_epoch())
