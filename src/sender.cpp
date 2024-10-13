@@ -26,19 +26,25 @@ bool DataSender::Init() {
                 boost::asio::ip::address::from_string(ip_), port_);
             tcp_socket_.connect(tcp_endpoint_);
         } else {
-            LOG_ERROR
-                << "no valid protocol selected. Data will not be forwarded.";
+            // we use debug level here since this might be intentional for testing (?)
+            LOG_DEBUG
+                << "no valid protocol selected. For " << ip_ << ":" << port_ << ". Data will not be forwarded.";
             return false;
         }
 
         initialized_ = true;
 
-        // return actual value of socket has been opened
+        // return actual value of socket initialization status.
         return IsInitialized();
     } catch (std::exception& e) {
-        LOG_ERROR << "Error initializing DataSender: " << e.what();
+        LogError_("Error initializing DataSender.", e.what());
     }
     return false;
+}
+
+inline void DataSender::LogError_(const std::string& msg, const char* err) {
+    LOG_ERROR << msg << " Specified ip and port " << ip_ << ":" << port_
+              << " error message -> " << err;
 }
 
 const bool DataSender::IsInitialized() const {
@@ -52,33 +58,30 @@ int64_t DataSender::Send(const uint8_t* data, const uint16_t size) {
         return static_cast<int64_t>(SendTcp_(data, size));
     }
 
-    return -1; // no suitable socket open
+    return -1; // no suitable socket opened and initialized
 }
 
 void DataSender::Shutdown() {
     // close sockets
-
-    boost::system::error_code ec;
-    
-
     try {
         if (udp_socket_.is_open()) {
-            udp_socket_.close(ec);
             LOG_DEBUG << "try closing udp on " << port_;
-            udp_socket_.shutdown(boost::asio::ip::udp::socket::shutdown_send);
+            // is the following necessary?
+            //udp_socket_.shutdown(boost::asio::ip::udp::socket::shutdown_send);
             udp_socket_.close();
         }
         if (tcp_socket_.is_open()) {
-            tcp_socket_.close(ec);
             LOG_DEBUG << "try closing tcp on " << port_;
-            tcp_socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send);
+            // is the following necessary?
+            //tcp_socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send);
             tcp_socket_.close();
         }
         
     } catch (std::exception& e) {
-        LOG_ERROR << "Error during Shutdown: " << e.what();
+        LogError_("Error during Shutdown of Datasender.", e.what());
     }
 
+    // run until work has finished.
     io_context_.run();
 
     initialized_ = false;
@@ -95,7 +98,7 @@ size_t DataSender::SendUdp_(const uint8_t* data, const uint16_t size) {
         LOG_DEBUG << "UDP data sent successfully, rc : " << rc;
         return rc;
     } catch (std::exception& e) {
-        LOG_ERROR << "Error sending via UDP: " << e.what();
+        LogError_("Error sending via UDP.", e.what());
     }
     return 0;
 }
@@ -107,7 +110,7 @@ size_t DataSender::SendTcp_(const uint8_t* data, const uint16_t size) {
         LOG_DEBUG << "TCP data sent successfully, rc: " << rc;
         return rc;
     } catch (std::exception& e) {
-        LOG_ERROR << "Error sending via TCP: " << e.what();
+        LogError_("Error sending via TCP.", e.what());
     }
     return 0;
 }

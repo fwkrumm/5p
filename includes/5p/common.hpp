@@ -80,4 +80,6 @@ struct config {
           skip(0U) {}
 };
 
+
+
 } // namespace common

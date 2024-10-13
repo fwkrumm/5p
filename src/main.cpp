@@ -2,45 +2,69 @@
 
 #include "5p_main.hpp"
 
+#define RETURN_WITH_CODE(rc)                      \
+    do {                                          \
+        LOG_INFO << "returning with code " << rc; \
+        return rc;                                \
+    } while (0)
+
+// ToDo refactor
 int main(int argc, char** argv) {
+
+    // parameters -> config
     common::config config;
 
+    // read network packets from pcap(ng) file
+    pcapreader::Reader reader;
 
-    // get config from parameters
+    // handle network packets -> boost sockets
+    packethandler::PacketHandler packerHandler;
+
+    
+
+    /*
+     * Read Parameters and set up logger
+     */
+
     auto rc = cli::GetParameters(argc, argv, config);
 
     // check for mandatory parameters; this also returns if --help is printed.
     if (rc == -1) {
-        return static_cast<int>(returns::ReturnCodes::HELP_PRINTED);
+        RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::HELP_PRINTED));
     } else if (rc != 0) {
-        return static_cast<int>(returns::ReturnCodes::MISSING_PARAMETERS);
+        RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::MISSING_PARAMETERS));
     }
     
-    // set log level
     logging_5p::SetUpLogger(config.level);
 
-    // create reader and set pcap file
-    pcapreader::Reader reader;
+
+    /*
+     * Create reader and apply filter if specified
+     */
     if (!reader.SetPcapFile(config.path)) {
-        return static_cast<int>(returns::ReturnCodes::PCAP_FILE_NOT_FOUND);
+        RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::PCAP_FILE_NOT_FOUND));
     }
-
-    // apply filter if one was set
     if (config.filter != "" && !reader.ApplyFilter(config.filter)) {
-        return static_cast<int>(returns::ReturnCodes::INVALID_FILTER);
+        RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::INVALID_FILTER));
     }
 
-    packethandler::PacketHandler packerHandler;
+    
+    /*
+     * ToDO hide functionality in class?
+     * ToDo add that one can also specify ONLY port or ONLY protocol
+     */
+
     bool manual_socket =
         config.port > 0 &&
         config.protocol != common::ProtocolType::PACKET_PROTOCOLS;
 
-    // if port has specified and protocol -> init sender and lock adding of new
-    // senders since via parameters only one protocol + port has been specified
+    // if port has specified AND protocol -> init sender and lock adding of new
+    // senders, since via parameters only one protocol + port is disired. if socket
+    // initialization fails -> exit here
     if (manual_socket) {
         if (!packerHandler.AddSender(config.protocol, config.ip, config.port)) {
             packerHandler.CleanMap();
-            return static_cast<int>(returns::ReturnCodes::SOCKET_FAILURE);
+            RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::SOCKET_FAILURE));
         }
         packerHandler.SetLockTo(true);
     }
@@ -88,6 +112,6 @@ int main(int argc, char** argv) {
 
     }
 
-    LOG_INFO << "ending cleanly";
-    return static_cast<int>(returns::ReturnCodes::SUCCESS);
+    LOG_INFO << "ending with SUCCESS";
+    RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::SUCCESS));
 }

@@ -2,6 +2,7 @@
 
 #define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
+#include <string>
 #include <boost/asio.hpp>
 
 #include "5p/common.hpp"
@@ -66,7 +67,7 @@ class DataSender {
      * @param size: size of data
      * @return number of bytes sent
      */
-     size_t SendUdp_(const uint8_t* data, const uint16_t size);
+    size_t SendUdp_(const uint8_t* data, const uint16_t size);
 
     /*
      * Send data over TCP
@@ -74,7 +75,13 @@ class DataSender {
      * @param size: size of data
      * @return number of bytes sent
      */
-     size_t SendTcp_(const uint8_t* data, const uint16_t size);
+    size_t SendTcp_(const uint8_t* data, const uint16_t size);
+
+    /*
+     * small helper function to log an error message and automatically
+     * include specified ip and port
+     */
+    inline void LogError_(const std::string& msg, const char* err);
 
     // ip and port
     std::string ip_;
