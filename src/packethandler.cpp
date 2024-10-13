@@ -2,7 +2,22 @@
 
 using namespace packethandler;
 
-PacketHandler::PacketHandler() : locked_(false) {
+PacketHandler::PacketHandler(const common::config& cfg) 
+    : static_ip_(cfg.ip), static_port_(cfg.port), static_protocol_type_(cfg.protocol) {
+
+    if (static_ip_ != common::INIT_IP) {
+        LOG_INFO << "ip persistently set to " << static_ip_;
+    }
+
+    if (static_port_ != common::INIT_PORT) {
+        LOG_INFO << "port persistently set to " << static_port_;
+    }
+
+    if (static_protocol_type_ != common::INIT_PROTOCOL_TYPE) {
+        LOG_INFO << "protocol type persistently set to "
+                 << static_cast<int32_t>(static_protocol_type_);
+    }
+
 }
 
 PacketHandler::~PacketHandler() { 
@@ -13,32 +28,42 @@ bool PacketHandler::AddSender(const common::ProtocolType& protocol,
                               const std::string& ip,
                               const uint16_t port) {
 
-    bool does_sender_already_exist = senders_[protocol][port] != nullptr;
-    bool is_protocol_valid = protocol == common::ProtocolType::UDP ||
-                             protocol == common::ProtocolType::TCP;
-    bool is_port_valid = port > 0U;
-    // check if map is locked or if sender already added or if protocol not supported or port is invalid
-    if (locked_ || does_sender_already_exist || !is_protocol_valid ||
-        !is_port_valid) {
-        // here one could add some point add port exclusions
-        return false;
+    // check if dynamic parameters from packet are supposed to be used or
+    // statically set
+    common::ProtocolType use_protocol =
+        (static_protocol_type_ == common::INIT_PROTOCOL_TYPE)
+            ? protocol
+            : static_protocol_type_;
+    uint16_t use_port =
+        (static_port_ == common::INIT_PORT) ? port : static_port_;
+    std::string use_ip = (static_ip_ == common::INIT_IP) ? ip : static_ip_;
+
+
+    bool does_sender_already_exist =
+        senders_[use_protocol][use_port] != nullptr;
+
+    if (does_sender_already_exist) {
+        // sender already there
+        return true;
     }
 
-    senders_[protocol][port] = new sender::DataSender(protocol, ip, port);
 
-    auto rc = senders_[protocol][port]->Init();
+    // note that we could do some checks here whether the ip is valid etc
+    // but we let the sockets decide whether or not the parameters are valid
+    // the Init() function will return false if anything fails
+
+    senders_[use_protocol][use_port] =
+        new sender::DataSender(use_protocol, use_ip, use_port);
+
+    auto rc = senders_[use_protocol][use_port]->Init();
     if (!rc) {
-        senders_[protocol][port]->Shutdown();
-        delete senders_[protocol][port];
-        senders_[protocol][port] = nullptr;
+        senders_[use_protocol][use_port]->Shutdown();
+        delete senders_[use_protocol][use_port];
+        senders_[use_protocol][use_port] = nullptr;
     }
     return rc;
 }
 
-const bool PacketHandler::DoesSenderExist(const common::ProtocolType& protocol,
-                                          const uint16_t port) {
-    return (senders_[protocol][port] != nullptr);
-}
 
 int64_t PacketHandler::Send(const common::ProtocolType& protocol,
                             const uint16_t port,
@@ -53,10 +78,6 @@ int64_t PacketHandler::Send(const common::ProtocolType& protocol,
 
     // return send result
     return sender->Send(data, size);
-}
-
-void PacketHandler::SetLockTo(const bool lock) {
-    locked_ = lock;
 }
 
 void PacketHandler::CleanMap() {

@@ -61,6 +61,27 @@ common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
         packet.getRawPacket()->getPacketTimeStamp().tv_sec * 1e3 +
         static_cast<uint64_t>(packet.getRawPacket()->getPacketTimeStamp().tv_nsec / 1e6);
 
+
+    if (packet.isPacketOfType(pcpp::IPv4)) {
+        pcpp::IPv4Layer* ipLayer = packet.getLayerOfType<pcpp::IPv4Layer>();
+        if (ipLayer != nullptr) {
+            pcpp::IPv4Address destIp = ipLayer->getDstIPv4Address();
+            dataPacket.ip = destIp.toString();
+            LOG_DEBUG << "Destination IPV4 Address: " << dataPacket.ip
+                      << std::endl;
+        }
+    } else if (packet.isPacketOfType(pcpp::IPv6)) {
+        pcpp::IPv6Layer* ipLayer = packet.getLayerOfType<pcpp::IPv6Layer>();
+        if (ipLayer != nullptr) {
+            pcpp::IPv6Address destIp = ipLayer->getDstIPv6Address();
+            dataPacket.ip = destIp.toString();
+            LOG_DEBUG << "Destination IPV6 Address: " << dataPacket.ip
+                      << std::endl;
+        }
+    } else {
+        LOG_WARNING << "no destination ip found.";
+    }
+
     // extract payload
     pcpp::PayloadLayer* payloadLayer =
         packet.getLayerOfType<pcpp::PayloadLayer>();
@@ -72,7 +93,6 @@ common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
         LOG_DEBUG << "extracted payload of size " << dataPacket.payloadLength;
     } else {
         LOG_WARNING << "no payload layer found.";
-        // dataPacket.payloadLength = 0U; // already initialized to 0U
     }
 
     // extract transport layer

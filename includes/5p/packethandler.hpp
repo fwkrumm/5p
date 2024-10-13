@@ -8,13 +8,12 @@
 
 #include "5p/common.hpp"
 #include "5p/sender.hpp"
-
 namespace packethandler {
 
 class PacketHandler {
     public:
 
-    PacketHandler();
+    PacketHandler(const common::config& cfg);
     ~PacketHandler();
 
     /*
@@ -22,17 +21,9 @@ class PacketHandler {
      */
     void CleanMap();
 
-    /*
-     * set lock to true or false to forbid or allow sender adding
-     */
-    void SetLockTo(const bool lock);
-    const bool IsLocked() const { return locked_; };
-
     bool AddSender(const common::ProtocolType& protocol, const std::string& ip, const uint16_t port);
     int64_t Send(const common::ProtocolType& protocol, const uint16_t port,
                  const uint8_t* data, const uint16_t size);
-    const bool DoesSenderExist (const common::ProtocolType& protocol,
-                         const uint16_t port);
     
     private:
 
@@ -41,8 +32,11 @@ class PacketHandler {
     */
     std::unordered_map<common::ProtocolType, std::unordered_map<uint16_t, sender::DataSender*>> senders_;
 
-    // will be set to true to prevent adding of further senders
-    bool locked_;
+    // any value specified from config 
+    // will be statically set for all senders
+    std::string static_ip_;
+    uint16_t static_port_;
+    common::ProtocolType static_protocol_type_;
 	
 
 };

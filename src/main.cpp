@@ -17,8 +17,7 @@ int main(int argc, char** argv) {
     // read network packets from pcap(ng) file
     pcapreader::Reader reader;
 
-    // handle network packets -> boost sockets
-    packethandler::PacketHandler packerHandler;
+    
 
     
 
@@ -54,22 +53,9 @@ int main(int argc, char** argv) {
      * ToDo add that one can also specify ONLY port or ONLY protocol
      */
 
-    bool manual_socket =
-        config.port > 0 &&
-        config.protocol != common::ProtocolType::PACKET_PROTOCOLS;
+    // handle network packets -> boost sockets
+    packethandler::PacketHandler packerHandler(config);
 
-    // if port has specified AND protocol -> init sender and lock adding of new
-    // senders, since via parameters only one protocol + port is disired. if socket
-    // initialization fails -> exit here
-    if (manual_socket) {
-        if (!packerHandler.AddSender(config.protocol, config.ip, config.port)) {
-            packerHandler.CleanMap();
-            RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::SOCKET_FAILURE));
-        }
-        packerHandler.SetLockTo(true);
-    }
-
-    
     // read packets from pcap file
     pcpp::Packet packet;
     uint64_t counter = 0U;
@@ -87,28 +73,18 @@ int main(int argc, char** argv) {
         }
 
         // extract data packet
-       common::DataPacket dataPacket = reader.ToDataPacket(packet);
+        common::DataPacket dataPacket = reader.ToDataPacket(packet);
 
-       // apply sleep if required
-       sleep_checker.CheckSleep(dataPacket.timestamp); 
-
-       if (manual_socket) {
-           packerHandler.Send(config.protocol, config.port, dataPacket.payload,
-                              dataPacket.payloadLength);
-           continue;
-       } 
-
-       // use data packet socket
-       if (!packerHandler.DoesSenderExist(dataPacket.protocol,
-                                          dataPacket.port)) {
-           packerHandler.AddSender(dataPacket.protocol, config.ip,
-                                   dataPacket.port);
-       }
+        // apply sleep if required
+        sleep_checker.CheckSleep(dataPacket.timestamp); 
 
         // send
-        packerHandler.Send(dataPacket.protocol, dataPacket.port,
-                            dataPacket.payload,
-                            dataPacket.payloadLength);
+        if (packerHandler.AddSender(dataPacket.protocol, dataPacket.ip,
+                                    dataPacket.port)) {
+            packerHandler.Send(dataPacket.protocol, dataPacket.port,
+                                dataPacket.payload, dataPacket.payloadLength);
+        }
+        
 
     }
 
