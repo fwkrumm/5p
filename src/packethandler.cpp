@@ -49,11 +49,14 @@ bool PacketHandler::AddSender(const common::ProtocolType& protocol,
         senders_[check.first][check.second]->Shutdown();
         delete senders_[check.first][check.second];
         senders_[check.first][check.second] = nullptr;
+        LOG_ERROR << "Init() of " 
+            << static_cast<int32_t>(check.first) << " and " 
+            << ip << ":" << check.second << " failed.";
+    } else {
+        LOG_DEBUG << "Sender added for protocol. Init of " 
+            << static_cast<int32_t>(check.first) << " and " 
+            << ip << ":" << check.second << " returned: " << rc;
     }
-
-    LOG_DEBUG << "Sender added for protocol " 
-        << static_cast<int32_t>(check.first) << " and " 
-        << ip << ":" << check.second << " returned: " << rc;
     return rc;
 }
 

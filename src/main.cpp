@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
     uint64_t counter = 0U;
     while (reader.NextPackage(packet)) {
 
-        // skip samples if specified; not yet opimal since each
+        // skip samples if specified; not yet optimal since each
         // packet is read from file, check if pcapplusplus offers
         // an api for this task
         if (++counter < config.skip) {
