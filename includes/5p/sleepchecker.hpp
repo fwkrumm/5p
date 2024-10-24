@@ -23,7 +23,7 @@ class SleepChecker {
      * check if sleep should be applied and set
      * new data packet timestamp
      */
-    void CheckSleep(const uint16_t timestamp);
+    void CheckSleep(const uint64_t timestamp);
 
     private:
     uint64_t lastDataPacketTimestamp_;

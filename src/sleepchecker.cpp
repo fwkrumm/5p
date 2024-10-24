@@ -9,7 +9,7 @@ SleepChecker::SleepChecker(const common::config& cfg)
 SleepChecker::~SleepChecker() { 
 }
 
-void SleepChecker::CheckSleep(const uint16_t timestamp) {
+void SleepChecker::CheckSleep(const uint64_t timestamp) {
 
     // prevent initial sleep
     if (lastDataPacketTimestamp_ == 0U) {
