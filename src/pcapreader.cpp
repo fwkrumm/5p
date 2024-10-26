@@ -90,15 +90,6 @@ bool Reader::checkFragmentation(pcpp::Packet& packet) {
     return false;
 }
 
-std::string toHexString(const uint8_t* data, size_t length) {
-    std::ostringstream oss;
-    for (size_t i = 0; i < length; ++i) {
-        oss << std::hex << std::setw(2) << std::setfill('0')
-            << static_cast<int>(data[i]) << " ";
-    }
-    return oss.str();
-}
-
 common::DataPacket Reader::ToDataPacket(pcpp::Packet& packet) {
 
    common::DataPacket dataPacket;
@@ -113,62 +104,21 @@ common::DataPacket Reader::ToDataPacket(pcpp::Packet& packet) {
         pcpp::Packet* reassembledPacket =
             ip_reassembly_.processPacket(&packet, status);
 
-        if (status == pcpp::IPReassembly::REASSEMBLED) {
-            LOG_INFO << "Packet reassembled successfully.";
-            pcpp::PayloadLayer* testLayer =
-                reassembledPacket->getLayerOfType<pcpp::PayloadLayer>();
-            if (testLayer != nullptr) {
-                LOG_INFO << "Reassembled packet of size "
-                         << testLayer->getPayloadLen();
-                std::string payloadString(
-                    reinterpret_cast<const char*>(testLayer->getPayload()),
-                    testLayer->getPayloadLen());
-                LOG_INFO << "Payload (string): " << payloadString;
-                LOG_INFO << "Payload (hex): "
-                         << toHexString(testLayer->getPayload(),
-                                        testLayer->getPayloadLen());
-            } else {
-                LOG_INFO << "No payload layer found in reassembled packet.";
-            }
-        } else {
-            LOG_INFO << "Packet reassembly status: " << status;
-            if (status == pcpp::IPReassembly::FRAGMENT ||
-                status == pcpp::IPReassembly::FIRST_FRAGMENT) {
-                pcpp::IPv4Layer* ipv4Layer =
-                    packet.getLayerOfType<pcpp::IPv4Layer>();
-                if (ipv4Layer != nullptr) {
-                    LOG_INFO << "Fragment offset: "
-                             << ipv4Layer->getFragmentOffset();
-                    pcpp::PayloadLayer* fragmentLayer =
-                        packet.getLayerOfType<pcpp::PayloadLayer>();
-                    if (fragmentLayer != nullptr) {
-                        LOG_INFO << "Fragment payload (hex): "
-                                 << toHexString(fragmentLayer->getPayload(),
-                                                fragmentLayer->getPayloadLen());
-                    }
-                }
-            }
-        }
+        if (reassembledPacket != nullptr &&
+            (status & pcpp::IPReassembly::REASSEMBLED)) {
 
-        #if (0)
-        if (reassembledPacket != nullptr) {
-            // Process the reassembled packet
-            // For example, write it to a new pcap file
+            // process the reassembled packet
             pcpp::PayloadLayer* testLayer =
                 reassembledPacket->getLayerOfType<pcpp::PayloadLayer>();
             LOG_INFO << "reassembled packet of size "
                      << testLayer->getPayloadLen() << " with status " << status;
-            std::string payloadString(
-                reinterpret_cast<const char*>(testLayer->getPayload()),
-                testLayer->getPayloadLen());
-            LOG_INFO << payloadString;
-            LOG_INFO << payloadString;
-            LOG_INFO << payloadString;
+
             packet = *reassembledPacket;
         } else {
-            LOG_WARNING << "reassembledPacket failed, Packet will probably contain nonsense! status = " << status;
+            LOG_DEBUG << "reassembledPacket failed, Packet will probably contain nonsense! status = " << status;
+            return dataPacket;
         }
-#endif
+
     }
 
     // extract payload
@@ -180,14 +130,11 @@ common::DataPacket Reader::ToDataPacket(pcpp::Packet& packet) {
             static_cast<uint16_t>(payloadLayer->getPayloadLen());
         
         LOG_DEBUG << "extracted payload of size " << dataPacket.payloadLength;
-#if (0)
+
          std::string payloadString(
             reinterpret_cast<const char*>(payloadLayer->getPayload()),
             payloadLayer->getPayloadLen());
-        LOG_INFO << payloadString;
-        LOG_INFO << payloadString;
-        LOG_INFO << payloadString;
-#endif
+        LOG_INFO << "payloadString = " << payloadString;
 
     } else {
         LOG_WARNING << "no payload layer found.";
