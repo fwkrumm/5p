@@ -52,7 +52,54 @@ bool Reader::NextPackage(pcpp::Packet& packet) {
     return true;
 }
 
-common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
+
+bool Reader::checkFragmentation(pcpp::Packet& packet) {
+    pcpp::IPv4Layer* ipv4Layer = packet.getLayerOfType<pcpp::IPv4Layer>();
+
+    if (ipv4Layer != nullptr) {
+
+        uint16_t fragmentOffset = ipv4Layer->getFragmentOffset();
+        bool moreFragments = ipv4Layer->isFragment();
+
+        if (fragmentOffset != 0 || moreFragments) {
+            LOG_INFO << "IPv4 packet requires reassembly: ID = "
+                     << ipv4Layer->getIPv4Header()->ipId
+                     << ", Offset = " << fragmentOffset
+                     << ", MoreFragments = " << moreFragments;
+            return true;
+        } 
+    } else {
+
+        pcpp::IPv6Layer* ipv6Layer = packet.getLayerOfType<pcpp::IPv6Layer>();
+        if (ipv6Layer != nullptr) {
+            // Check for IPv6 fragmentation header
+            pcpp::IPv6FragmentationHeader* fragHeader =
+                ipv6Layer->getExtensionOfType<pcpp::IPv6FragmentationHeader>();
+            if (fragHeader != nullptr) {
+                LOG_INFO << "IPv6 packet requires reassembly: Fragment offset = "
+                         << fragHeader->getFragmentOffset()
+                         << ", isMoreFragments = " << fragHeader->isMoreFragments();
+                return true;
+            }
+        } else {
+            LOG_INFO << "packet does not have IPv4 or IPv6 layers. Assuming not fragmented";
+        }
+    }
+
+    // no fragmented fragments
+    return false;
+}
+
+std::string toHexString(const uint8_t* data, size_t length) {
+    std::ostringstream oss;
+    for (size_t i = 0; i < length; ++i) {
+        oss << std::hex << std::setw(2) << std::setfill('0')
+            << static_cast<int>(data[i]) << " ";
+    }
+    return oss.str();
+}
+
+common::DataPacket Reader::ToDataPacket(pcpp::Packet& packet) {
 
    common::DataPacket dataPacket;
 
@@ -60,6 +107,69 @@ common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
     dataPacket.timestamp =
         packet.getRawPacket()->getPacketTimeStamp().tv_sec * 1e3 +
         static_cast<uint64_t>(packet.getRawPacket()->getPacketTimeStamp().tv_nsec / 1e6);
+
+    if (checkFragmentation(packet)) {
+        pcpp::IPReassembly::ReassemblyStatus status;
+        pcpp::Packet* reassembledPacket =
+            ip_reassembly_.processPacket(&packet, status);
+
+        if (status == pcpp::IPReassembly::REASSEMBLED) {
+            LOG_INFO << "Packet reassembled successfully.";
+            pcpp::PayloadLayer* testLayer =
+                reassembledPacket->getLayerOfType<pcpp::PayloadLayer>();
+            if (testLayer != nullptr) {
+                LOG_INFO << "Reassembled packet of size "
+                         << testLayer->getPayloadLen();
+                std::string payloadString(
+                    reinterpret_cast<const char*>(testLayer->getPayload()),
+                    testLayer->getPayloadLen());
+                LOG_INFO << "Payload (string): " << payloadString;
+                LOG_INFO << "Payload (hex): "
+                         << toHexString(testLayer->getPayload(),
+                                        testLayer->getPayloadLen());
+            } else {
+                LOG_INFO << "No payload layer found in reassembled packet.";
+            }
+        } else {
+            LOG_INFO << "Packet reassembly status: " << status;
+            if (status == pcpp::IPReassembly::FRAGMENT ||
+                status == pcpp::IPReassembly::FIRST_FRAGMENT) {
+                pcpp::IPv4Layer* ipv4Layer =
+                    packet.getLayerOfType<pcpp::IPv4Layer>();
+                if (ipv4Layer != nullptr) {
+                    LOG_INFO << "Fragment offset: "
+                             << ipv4Layer->getFragmentOffset();
+                    pcpp::PayloadLayer* fragmentLayer =
+                        packet.getLayerOfType<pcpp::PayloadLayer>();
+                    if (fragmentLayer != nullptr) {
+                        LOG_INFO << "Fragment payload (hex): "
+                                 << toHexString(fragmentLayer->getPayload(),
+                                                fragmentLayer->getPayloadLen());
+                    }
+                }
+            }
+        }
+
+        #if (0)
+        if (reassembledPacket != nullptr) {
+            // Process the reassembled packet
+            // For example, write it to a new pcap file
+            pcpp::PayloadLayer* testLayer =
+                reassembledPacket->getLayerOfType<pcpp::PayloadLayer>();
+            LOG_INFO << "reassembled packet of size "
+                     << testLayer->getPayloadLen() << " with status " << status;
+            std::string payloadString(
+                reinterpret_cast<const char*>(testLayer->getPayload()),
+                testLayer->getPayloadLen());
+            LOG_INFO << payloadString;
+            LOG_INFO << payloadString;
+            LOG_INFO << payloadString;
+            packet = *reassembledPacket;
+        } else {
+            LOG_WARNING << "reassembledPacket failed, Packet will probably contain nonsense! status = " << status;
+        }
+#endif
+    }
 
     // extract payload
     pcpp::PayloadLayer* payloadLayer =
@@ -70,6 +180,15 @@ common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
             static_cast<uint16_t>(payloadLayer->getPayloadLen());
         
         LOG_DEBUG << "extracted payload of size " << dataPacket.payloadLength;
+#if (0)
+         std::string payloadString(
+            reinterpret_cast<const char*>(payloadLayer->getPayload()),
+            payloadLayer->getPayloadLen());
+        LOG_INFO << payloadString;
+        LOG_INFO << payloadString;
+        LOG_INFO << payloadString;
+#endif
+
     } else {
         LOG_WARNING << "no payload layer found.";
     }
