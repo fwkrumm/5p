@@ -62,7 +62,7 @@ bool Reader::checkFragmentation(pcpp::Packet& packet) {
         bool moreFragments = ipv4Layer->isFragment();
 
         if (fragmentOffset != 0 || moreFragments) {
-            LOG_INFO << "IPv4 packet requires reassembly: ID = "
+            LOG_DEBUG << "IPv4 packet requires reassembly: ID = "
                      << ipv4Layer->getIPv4Header()->ipId
                      << ", Offset = " << fragmentOffset
                      << ", MoreFragments = " << moreFragments;
@@ -76,13 +76,14 @@ bool Reader::checkFragmentation(pcpp::Packet& packet) {
             pcpp::IPv6FragmentationHeader* fragHeader =
                 ipv6Layer->getExtensionOfType<pcpp::IPv6FragmentationHeader>();
             if (fragHeader != nullptr) {
-                LOG_INFO << "IPv6 packet requires reassembly: Fragment offset = "
+                LOG_DEBUG
+                    << "IPv6 packet requires reassembly: Fragment offset = "
                          << fragHeader->getFragmentOffset()
                          << ", isMoreFragments = " << fragHeader->isMoreFragments();
                 return true;
             }
         } else {
-            LOG_INFO << "packet does not have IPv4 or IPv6 layers. Assuming not fragmented";
+            LOG_DEBUG << "packet does not have IPv4 or IPv6 layers. Assuming not fragmented";
         }
     }
 
@@ -114,6 +115,9 @@ common::DataPacket Reader::ToDataPacket(pcpp::Packet& packet) {
                      << testLayer->getPayloadLen() << " with status " << status;
 
             packet = *reassembledPacket;
+
+            delete reassembledPacket;
+            reassembledPacket = nullptr;
         } else {
             LOG_DEBUG << "reassembledPacket failed, Packet will probably contain nonsense! status = " << status;
             return dataPacket;
@@ -130,12 +134,6 @@ common::DataPacket Reader::ToDataPacket(pcpp::Packet& packet) {
             static_cast<uint16_t>(payloadLayer->getPayloadLen());
         
         LOG_DEBUG << "extracted payload of size " << dataPacket.payloadLength;
-
-         std::string payloadString(
-            reinterpret_cast<const char*>(payloadLayer->getPayload()),
-            payloadLayer->getPayloadLen());
-        LOG_INFO << "payloadString = " << payloadString;
-
     } else {
         LOG_WARNING << "no payload layer found.";
     }

@@ -35,15 +35,15 @@ class Reader {
     // for reassemble of fragmented packets
     pcpp::IPReassembly ip_reassembly_;
 
-    // edbug
-    std::map<uint16_t, pcpp::Packet> buffer_;
-
     public:
     Reader();
     ~Reader();
 
     /*
      * Check for fragmented packets
+     * @param packet: the packet to check
+     * @return true if the packet is fragmented
+     *       false if the packet is not fragmented
      */
     bool checkFragmentation(pcpp::Packet& packet);
 
