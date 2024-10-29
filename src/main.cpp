@@ -59,6 +59,13 @@ int main(int argc, char** argv) {
      */
     pcpp::Packet packet;
     uint64_t counter = 0U;
+
+    // to record run times
+    int64_t start = std::chrono::duration_cast<std::chrono::microseconds>(
+                        std::chrono::system_clock::now().time_since_epoch())
+                        .count();
+    int64_t end = 0;
+
     while (reader.NextPackage(packet)) {
 
         // skip samples if specified; not yet optimal since each
@@ -68,11 +75,20 @@ int main(int argc, char** argv) {
             continue;
         }
 
+        
         // extract data packet
         common::DataPacket dataPacket = reader.ToDataPacket(packet);
 
+        end = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::system_clock::now().time_since_epoch())
+                    .count();
+
         // apply sleep if required
-        sleep_checker.CheckSleep(dataPacket.timestamp); 
+        sleep_checker.CheckSleep(dataPacket.timestamp, end - start); 
+
+        start = std::chrono::duration_cast<std::chrono::microseconds>(
+                    std::chrono::system_clock::now().time_since_epoch())
+                    .count();
 
         // send data
         if (packerHandler.AddSender(dataPacket.protocol, config.ip,
