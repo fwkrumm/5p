@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
     } else if (rc != 0) {
         RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::MISSING_PARAMETERS));
     }
-    
+
     logging_5p::SetUpLogger(config.level);
 
 
@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
         RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::INVALID_FILTER));
     }
 
-    
+
     /*
      * Create packet handler which forwards the data
      * via boost sockets to desired destination
@@ -54,7 +54,7 @@ int main(int argc, char** argv) {
     sleepchecker::SleepChecker sleep_checker(config);
 
     /*
-     * read packets from pcap(ng) file. 
+     * read packets from pcap(ng) file.
      * Loop until end of file reached.
      */
     pcpp::Packet packet;
@@ -68,14 +68,12 @@ int main(int argc, char** argv) {
 
     while (reader.NextPackage(packet)) {
 
-        // skip samples if specified; not yet optimal since each
-        // packet is read from file, check if pcapplusplus offers
-        // an api for this task
+        // skip samples if specified; apparently there
+        // is not API for this
         if (++counter < config.skip) {
             continue;
         }
 
-        
         // extract data packet
         common::DataPacket dataPacket = reader.ToDataPacket(packet);
 
@@ -84,7 +82,7 @@ int main(int argc, char** argv) {
                     .count();
 
         // apply sleep if required
-        sleep_checker.CheckSleep(dataPacket.timestamp, end - start); 
+        sleep_checker.CheckSleep(dataPacket.timestamp, end - start);
 
         start = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now().time_since_epoch())
@@ -96,7 +94,7 @@ int main(int argc, char** argv) {
             auto rv = packerHandler.Send(dataPacket.protocol, dataPacket.port,
                                     dataPacket.payload, dataPacket.payloadLength);
         }
-        
+
 
     }
 

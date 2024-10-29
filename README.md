@@ -169,7 +169,6 @@ In the root directory’s scripts folder, there are basic scripts for testing th
 <a name="todos"></a>
 ## ToDos
 
-- More Precise sleep mechanism
 - Test usage on other setups (so far tested on Windows with Docker)
 - Nicer graphics (I don’t do frontend ...)
 - Add unit tests
