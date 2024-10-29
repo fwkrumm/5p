@@ -52,7 +52,46 @@ bool Reader::NextPackage(pcpp::Packet& packet) {
     return true;
 }
 
-common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
+
+bool Reader::checkFragmentation(pcpp::Packet& packet) {
+    pcpp::IPv4Layer* ipv4Layer = packet.getLayerOfType<pcpp::IPv4Layer>();
+
+    if (ipv4Layer != nullptr) {
+
+        uint16_t fragmentOffset = ipv4Layer->getFragmentOffset();
+        bool moreFragments = ipv4Layer->isFragment();
+
+        if (fragmentOffset != 0 || moreFragments) {
+            LOG_DEBUG << "IPv4 packet requires reassembly: ID = "
+                     << ipv4Layer->getIPv4Header()->ipId
+                     << ", Offset = " << fragmentOffset
+                     << ", MoreFragments = " << moreFragments;
+            return true;
+        } 
+    } else {
+
+        pcpp::IPv6Layer* ipv6Layer = packet.getLayerOfType<pcpp::IPv6Layer>();
+        if (ipv6Layer != nullptr) {
+            // Check for IPv6 fragmentation header
+            pcpp::IPv6FragmentationHeader* fragHeader =
+                ipv6Layer->getExtensionOfType<pcpp::IPv6FragmentationHeader>();
+            if (fragHeader != nullptr) {
+                LOG_DEBUG
+                    << "IPv6 packet requires reassembly: Fragment offset = "
+                         << fragHeader->getFragmentOffset()
+                         << ", isMoreFragments = " << fragHeader->isMoreFragments();
+                return true;
+            }
+        } else {
+            LOG_DEBUG << "packet does not have IPv4 or IPv6 layers. Assuming not fragmented";
+        }
+    }
+
+    // no fragmented fragments
+    return false;
+}
+
+common::DataPacket Reader::ToDataPacket(pcpp::Packet& packet) {
 
    common::DataPacket dataPacket;
 
@@ -60,6 +99,31 @@ common::DataPacket Reader::ToDataPacket(const pcpp::Packet& packet) {
     dataPacket.timestamp =
         packet.getRawPacket()->getPacketTimeStamp().tv_sec * 1e3 +
         static_cast<uint64_t>(packet.getRawPacket()->getPacketTimeStamp().tv_nsec / 1e6);
+
+    if (checkFragmentation(packet)) {
+        pcpp::IPReassembly::ReassemblyStatus status;
+        pcpp::Packet* reassembledPacket =
+            ip_reassembly_.processPacket(&packet, status);
+
+        if (reassembledPacket != nullptr &&
+            (status & pcpp::IPReassembly::REASSEMBLED)) {
+
+            // process the reassembled packet
+            pcpp::PayloadLayer* testLayer =
+                reassembledPacket->getLayerOfType<pcpp::PayloadLayer>();
+            LOG_INFO << "reassembled packet of size "
+                     << testLayer->getPayloadLen() << " with status " << status;
+
+            packet = *reassembledPacket;
+
+            delete reassembledPacket;
+            reassembledPacket = nullptr;
+        } else {
+            LOG_DEBUG << "reassembledPacket failed, Packet will probably contain nonsense! status = " << status;
+            return dataPacket;
+        }
+
+    }
 
     // extract payload
     pcpp::PayloadLayer* payloadLayer =

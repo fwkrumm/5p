@@ -12,6 +12,7 @@
 #include <pcapplusplus/RawPacket.h>
 #include <pcapplusplus/TcpLayer.h>
 #include <pcapplusplus/UdpLayer.h>
+#include <pcapplusplus/IPReassembly.h>
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -27,11 +28,24 @@ namespace pcapreader {
  */
 class Reader {
     private:
+
+    // reading of packes from pcap file
     pcpp::IFileReaderDevice* reader_;
+
+    // for reassemble of fragmented packets
+    pcpp::IPReassembly ip_reassembly_;
 
     public:
     Reader();
     ~Reader();
+
+    /*
+     * Check for fragmented packets
+     * @param packet: the packet to check
+     * @return true if the packet is fragmented
+     *       false if the packet is not fragmented
+     */
+    bool checkFragmentation(pcpp::Packet& packet);
 
     /*
      * Set the pcap file to read
@@ -63,7 +77,7 @@ class Reader {
      * @return DataPacket which contains protocol
      *       type and payload (+ its size)
      */
-    common::DataPacket ToDataPacket(const pcpp::Packet& packet);
+    common::DataPacket ToDataPacket(pcpp::Packet& packet);
 };
 
 }    // namespace ppppp
