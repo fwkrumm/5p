@@ -65,6 +65,7 @@ class Reader {
 
     /*
      * Get the next packet from the pcap file
+     * Note that this is not const because of packet reassembly
      * @param packet: the packet to be filled
      * @return true if a packet was read successfully
      *        false if no more packets are available
