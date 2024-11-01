@@ -173,3 +173,4 @@ In the root directory’s scripts folder, there are basic scripts for testing th
 - Nicer graphics (I don’t do frontend ...)
 - Add unit tests
 - Use consistent code style 
+- Is it possible to exclude Packet.dll and wpcap.dll from linking
