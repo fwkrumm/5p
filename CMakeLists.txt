@@ -19,7 +19,6 @@ find_package(GTest REQUIRED)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 
 set(SOURCE_FILES_5P
-    src/main.cpp
     src/cli.cpp
     src/sender.cpp
     src/pcapreader.cpp
@@ -28,7 +27,7 @@ set(SOURCE_FILES_5P
 )
 
 add_executable(${PROJECT_NAME}
-    ${SOURCE_FILES_5P}
+	src/main.cpp
 )
 
 add_library(${PROJECT_NAME_LIB}
@@ -61,6 +60,7 @@ target_link_libraries(${TEST_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     ${LIBRARIES_5P}
+	${PROJECT_NAME_LIB}
 )
 
 # includes redundant since otherwise vs studio
