@@ -13,6 +13,7 @@
 #include <pcapplusplus/TcpLayer.h>
 #include <pcapplusplus/UdpLayer.h>
 #include <pcapplusplus/IPReassembly.h>
+#include <pcapplusplus/Logger.h>
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -36,7 +37,13 @@ class Reader {
     pcpp::IPReassembly ip_reassembly_;
 
     public:
-    Reader();
+
+    /*
+      * Constructor
+      * @param verboseLogging: if true, debug logging is added for pcapplusplus library
+       * @return void
+    */
+    explicit Reader(const bool verboseLogging = false);
     ~Reader();
 
     /*
