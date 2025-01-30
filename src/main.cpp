@@ -29,9 +29,9 @@ int main(int argc, char** argv) {
 
 
     /*
-     * Create reader and apply filter if specified
+     * Create reader and apply filter if specified; if trace level is specified, enable debug logging for pcapplusplus library
      */
-    pcapreader::Reader reader;
+    pcapreader::Reader reader(config.level == common::LogLevel::TRACE_LEVEL);
 
     if (!reader.SetPcapFile(config.path)) {
         RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::PCAP_FILE_NOT_FOUND));
@@ -81,6 +81,11 @@ int main(int argc, char** argv) {
                     std::chrono::system_clock::now().time_since_epoch())
                     .count();
 
+        if (dataPacket.timestamp == 0U) {
+            LOG_DEBUG << "skipping timestamp 0 packet (potentially not correctly reassembled).";
+            continue;
+        }
+
         // apply sleep if required
         sleep_checker.CheckSleep(dataPacket.timestamp, end - start);
 
@@ -98,6 +103,12 @@ int main(int argc, char** argv) {
         }
 
 
+    }
+
+    if (counter == 0U) {
+        LOG_WARNING << "no packets found in pcap file. Probably there are not packets for the "
+                       "specified filter or the file is corrupt. You might want to try to open the pcap "
+                       "file (with e.g. Wireshark) and cut away the first ~5 packets and safe this as a new file.";
     }
 
     LOG_INFO << "ending with SUCCESS";

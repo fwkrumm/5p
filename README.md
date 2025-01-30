@@ -10,6 +10,7 @@ We recommend thoroughly reviewing the licenses of any dependencies or third-part
 - [About](#about)
 - [Compiling](#compiling)
 - [Quick Dive](#quick-dive)
+- [Packet Reassembly](#packet-reassembly)
 - [ToDos](#todos)
 
 
@@ -85,10 +86,10 @@ The first command fetches all dependencies, and if they are not available, it tr
 <a name="quick-dive"></a>
 ## Quick Dive
 
-After compilation you can run the program via (on Linux omit the .exe of course)
+After compilation you can run the program via
 
 ```
-5p.exe C:\path\to\test\trace.pcapng
+5p /path/to/test/trace.pcapng
 ```
 
 which reads the packets from the trace and forwards them to `127.0.0.1` with the original destination port and protocol (TCP/UDP) of the packets.
@@ -98,26 +99,26 @@ The parameters can be adjusted in the following way
 
 Adjust the ip so that all packets will be forwarde to that ip, still with original protocol and port
 ```
-5p.exe C:\path\to\test\trace.pcapng --ip 192.168.178.123
+5p /path/to/test/trace.pcapng --ip 192.168.178.123
 ```
 
 Adjust the port, the packets will be send to default ip `127.0.0.1` but all will use port `49999` with the packet original protocol (TCP/UDP).
 ```
-5p.exe C:\path\to\test\trace.pcapng --port 49999
+5p /path/to/test/trace.pcapng --port 49999
 ```
 
 Change the protocol, `2 --> UDP; 1 --> TCP`, i.e. all packets will be forwarde to `127.0.0.1` on their default port via UDP.
 ```
-5p.exe C:\path\to\test\trace.pcapng --protocol 2
+5p /path/to/test/trace.pcapng --protocol 2
 ```
 
 Of course you can combine this parameters, e.g. to forward all packets via UDP on port `49999` you can use
 ```
-5p.exe C:\path\to\test\trace.pcapng --protocol 2 -- port 49999
+5p /path/to/test/trace.pcapng --protocol 2 -- port 49999
 ```
 
 
-Other parameters are 
+Other parameters are
 `--level` for the log level (logging to file always enabled on debug level)
 
 `--filter` to apply a filter in BPF format
@@ -129,14 +130,14 @@ Other parameters are
 
 For more details check
 ```
-5p.exe --help
+5p --help
 ```
 
 
 
 ### Using the devcontainer on Windows
 
-It is possible to send the data from devcontainer to windows host and thus to not use any licensed dll files. 
+It is possible to send the data from devcontainer to windows host and thus to not use any licensed dll files.
 The ip address to receive the data on the host (Windows) you can extract via
 
 ```shell
@@ -153,7 +154,7 @@ PING host.docker.internal (192.168.65.254) 56(84) bytes of data.
 ...
 
 ```
-5p C:\path\to\test\trace.pcapng --ip 192.168.65.254
+5p /path/to/test/trace.pcapng --ip 192.168.65.254
 ```
 
 Note that for other ports you might need to forward that ports; cf. .devcontainer/devcontainer.json
@@ -165,12 +166,31 @@ Note that for other ports you might need to forward that ports; cf. .devcontaine
 In the root directory’s scripts folder, there are basic scripts for testing the receiving and sending UDP/TCP packets.
 
 
+
+---
+<a name="Packet reassembly"></a>
+## Packet Reassembly
+
+Sometimes packets might be fragmented. These packets will be shown in Wireshark (usually) as IPv4 packets with the fragmented flag being true. In this case, it is important to choose a suitable filter since, for example, `--filter "udp"` will throw these packets away and thus the reassembly will fail.
+
+In such cases, a filter as follows might be more suitable (in this example for UDP packets):
+
+
+```
+5p path/to/test/trace.pcapng --filter "ip host x.x.x.x and ip dst x.x.x.x and ((ip[6:2] & 0x1fff != 0) or (ip proto \udp))"
+```
+
+
+This filter first checks for specific host and destination ip addresses and also for either complete UDP packets (non-fragmented) or fragmented packets via `(ip[6:2] & 0x1fff != 0)` which basically checks for the fragmented flag being true in the IP header (TODO is this 100% fail-safe?)
+
+
+
 ---
 <a name="todos"></a>
 ## ToDos
 
 - Test usage on other setups (so far tested on Windows with Docker)
 - Nicer graphics (I don’t do frontend ...)
-- Add unit tests
-- Use consistent code style 
+- Add (more) unit tests
+- Use consistent code style
 - Is it possible to exclude Packet.dll and wpcap.dll from linking

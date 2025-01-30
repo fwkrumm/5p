@@ -3,13 +3,14 @@
 #define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
 #include <iostream>
+#include <cstdint>
 
 namespace common {
 
 // log levels
 enum class LogLevel {
-    DEBUG_LEVEL = 0,
-    ALSO_DEBUG_LEVEL = 1,
+    TRACE_LEVEL = 0,
+    DEBUG_LEVEL = 1,
     INFO_LEVEL = 2,
     WARNING_LEVEL = 3,
     ERROR_LEVEL = 4,

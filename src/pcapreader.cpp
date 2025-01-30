@@ -2,7 +2,16 @@
 
 using namespace pcapreader;
 
-Reader::Reader() : reader_(nullptr) {}
+Reader::Reader(const bool verboseLogging) : reader_(nullptr) {
+    if (verboseLogging) {
+        // set all modules to debug level
+        pcpp::Logger::getInstance().setAllModulesToLogLevel(
+            pcpp::Logger::Debug);
+        LOG_DEBUG << "Log level set to trace and thus pcap plus plus library "
+                     "will debug log.";
+    }
+
+}
 
 bool Reader::SetPcapFile(const std::string& path) {
     // check if file exists
@@ -12,7 +21,7 @@ bool Reader::SetPcapFile(const std::string& path) {
     }
 
     // check if already open
-    if (reader_ && reader_->open()) {
+    if (reader_ && reader_->isOpened()) {
         LOG_WARNING << "pcap reader was already open, "
                     << "closing it to open new file";
         reader_->close();
@@ -95,11 +104,7 @@ common::DataPacket Reader::ToDataPacket(pcpp::Packet& packet) {
 
    common::DataPacket dataPacket;
 
-    // timestamp of package in ms
-    dataPacket.timestamp =
-        packet.getRawPacket()->getPacketTimeStamp().tv_sec * 1e3 +
-        static_cast<uint64_t>(packet.getRawPacket()->getPacketTimeStamp().tv_nsec / 1e6);
-
+    // check if packet is fragmented
     if (checkFragmentation(packet)) {
         pcpp::IPReassembly::ReassemblyStatus status;
         pcpp::Packet* reassembledPacket =
@@ -124,6 +129,15 @@ common::DataPacket Reader::ToDataPacket(pcpp::Packet& packet) {
         }
 
     }
+
+    // timestamp of package in ms; we do this after reassembly check to assure that no
+    // fragmented packets receive a non-zero timestamp. NOTE that some of the following
+    // extractions can still fail (no payload, no tcp/udp layer). In case this cases problems add return dataPacket to any checks
+    // and move the timestamp assignment to the end.
+    dataPacket.timestamp =
+        packet.getRawPacket()->getPacketTimeStamp().tv_sec * 1e3 +
+        static_cast<uint64_t>(
+            packet.getRawPacket()->getPacketTimeStamp().tv_nsec / 1e6);
 
     // extract payload
     pcpp::PayloadLayer* payloadLayer =
@@ -183,7 +197,7 @@ Reader::~Reader() {
     }
 
     // close if open
-    if (reader_->open()) {
+    if (reader_->isOpened()) {
         reader_->close();
     }
 
