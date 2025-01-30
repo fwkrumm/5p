@@ -3,6 +3,7 @@
 #define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
 #include <iostream>
+#include <cstdint>
 
 namespace common {
 
