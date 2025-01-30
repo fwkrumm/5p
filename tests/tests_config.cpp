@@ -4,8 +4,8 @@
 
 #include "5p_main.hpp"
 
-// Example test
-TEST(SampleTest, AssertionTrue) {
+// check that config is correctly created from argument string
+TEST(ArgumentTest, AssertionTrue) {
     
     // fake some input parameters
     int argc = 16;
