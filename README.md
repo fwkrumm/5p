@@ -191,7 +191,6 @@ This filter first checks for specific host and destination ip addresses and also
 ## ToDos
 
 - Test usage on other setups (so far tested on Windows with Docker)
-- Nicer graphics (I don’t do frontend ...)
-- Add (more) unit tests
+- Add (more) unit tests, especially concerning packet reassembly
 - Use consistent code style
-- Is it possible to exclude Packet.dll and wpcap.dll from linking
+- Is it possible to exclude Packet.dll and wpcap.dll from linking?
