@@ -35,7 +35,7 @@ The dependencies for the main functionality are pcapplusplus and boost.
     However, please note that a commercial license for Docker might be necessary.
     To clarify this issue, please refer to the following graphic which visualizes the data flow:
 
-    ![dataflow](./docs/assets/dataflow.png)
+    ![dataflow](./docs/assets/dataflow.svg)
 
 
 2. On Linux, you should be able to run the software without this limitation.
@@ -70,6 +70,7 @@ should yield
 
 conancenter: https://center.conan.io [Verify SSL: True, Enabled: True].
 
+In more recent conan 2 versions it might be https://center2.conan.io.
 In the root directory of 5p (after e.g. `git clone https://github.com/NotAvailable-EUR/5p.git && cd 5p`) execute
 
 ```shell
@@ -190,7 +191,6 @@ This filter first checks for specific host and destination ip addresses and also
 ## ToDos
 
 - Test usage on other setups (so far tested on Windows with Docker)
-- Nicer graphics (I don’t do frontend ...)
-- Add (more) unit tests
+- Add (more) unit tests, especially concerning packet reassembly
 - Use consistent code style
-- Is it possible to exclude Packet.dll and wpcap.dll from linking
+- Is it possible to exclude Packet.dll and wpcap.dll from linking?

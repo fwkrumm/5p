@@ -2,13 +2,14 @@
 
 #include "5p_main.hpp"
 
+// helper to log return code at info level before returning it
 #define RETURN_WITH_CODE(rc)                      \
     do {                                          \
         LOG_INFO << "returning with code " << rc; \
         return rc;                                \
     } while (0)
 
-// ToDo refactor
+
 int main(int argc, char** argv) {
 
 
