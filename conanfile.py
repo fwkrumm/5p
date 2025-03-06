@@ -15,6 +15,7 @@ class PPPPP(ConanFile):
         note that for boost/1.87.0 there will occur an error:
         error: ‘from_string’ is not a member of ‘boost::asio::ip::address’
             boost::asio::ip::address::from_string(ip_), port_);
+        solution might be boost::asio::ip::make_address(ip_) (untested)
         """
         self.requires("boost/1.86.0")
         self.requires("pcapplusplus/24.09")
