@@ -43,7 +43,7 @@ int GetParameters(const int argc, char** const argv, common::config& cfg) {
 
     app.add_option(
         "--sleep", cfg.sleep,
-        "select sleep time between samples. -1 means use live "
+        "select sleep time between samples in ms. -1 means use live "
         "time (within clock precision) Default is " +
             std::to_string(cfg.sleep));
 

@@ -16,9 +16,10 @@ void SleepChecker::PreciseSleep(double seconds) {
     // source:
     // https://blat-blatnik.github.io/computerBear/making-accurate-sleep-function/
 
-    LOG_DEBUG << "executing PreciseSleep with " << seconds << " seconds";
-
+    // skip negative sleep times
     if (seconds <= 0) return;
+
+    LOG_DEBUG << "executing PreciseSleep with " << seconds << " seconds";
 
     static double estimate = 5e-3;
     static double mean = 5e-3;
@@ -59,8 +60,12 @@ void SleepChecker::CheckSleep(const uint64_t timestamp, const int64_t runtimeUs)
 
     double runtimeMs = runtimeUs / 1e3;    // us -> ms
     LOG_DEBUG << "run time ms = " << runtimeMs;
+    
+    // if package difference is used make sure timestamp is >= last timestamp
+    // do not run into uint64 overflow because of negative window
+    if (sleepTime_ == -1 &&
+        (timestamp >= lastDataPacketTimestamp_)) {
 
-    if (sleepTime_ == -1) {
         // time sleep according to data packet (add check that no backward jumps?)
         auto diffBetweenSamples = timestamp - lastDataPacketTimestamp_;
         LOG_DEBUG << "according to data packet diff, sleeping "

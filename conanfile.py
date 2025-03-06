@@ -11,14 +11,19 @@ class PPPPP(ConanFile):
     generators = "CMakeDeps"
 
     def requirements(self):
-        self.requires("boost/[>=1.86.0 <2.0.0]")
-        self.requires("pcapplusplus/[>=24.09 <25.0]")
-        self.requires("cli11/[>=2.4.2 <3.0.0]")
+        """
+        note that for boost/1.87.0 there will occur an error:
+        error: ‘from_string’ is not a member of ‘boost::asio::ip::address’
+            boost::asio::ip::address::from_string(ip_), port_);
+        """
+        self.requires("boost/1.86.0")
+        self.requires("pcapplusplus/24.09")
+        self.requires("cli11/2.4.2")
 
     def build_requirements(self):
-        self.test_requires("gtest/[>=1.15.0 <2.0.0]")
-        self.tool_requires("cppcheck/[>=2.15.0 <3.0.0]")
-        self.tool_requires("cmake/[>=3.30.1 <4.0.0]")
+        self.test_requires("gtest/1.15.0")
+        self.tool_requires("cppcheck/2.16.0")
+        self.tool_requires("cmake/3.30.5")
 
     def layout(self):
         cmake_layout(self)

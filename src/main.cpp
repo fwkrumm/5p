@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
             auto rv = packerHandler.Send(dataPacket.protocol, dataPacket.port,
                                     dataPacket.payload, dataPacket.payloadLength);
             LOG_DEBUG << "Sending packet of size " << dataPacket.payloadLength
-                      << " retruned: " << rv;
+                      << " returned: " << rv;
         }
 
 
