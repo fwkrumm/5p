@@ -3,16 +3,11 @@
 using namespace sleepchecker;
 
 SleepChecker::SleepChecker(const common::config& cfg)
-    : lastDataPacketTimestamp_(0U), sleepTime_(cfg.sleep) {
-}
+    : lastDataPacketTimestamp_(0U), sleepTime_(cfg.sleep) {}
 
-SleepChecker::~SleepChecker() {
-}
-
-
+SleepChecker::~SleepChecker() {}
 
 void SleepChecker::PreciseSleep(double seconds) {
-
     // source:
     // https://blat-blatnik.github.io/computerBear/making-accurate-sleep-function/
 
@@ -50,8 +45,8 @@ void SleepChecker::PreciseSleep(double seconds) {
     }
 }
 
-void SleepChecker::CheckSleep(const uint64_t timestamp, const int64_t runtimeUs) {
-
+void SleepChecker::CheckSleep(const uint64_t timestamp,
+                              const int64_t runtimeUs) {
     // prevent initial sleep
     if (lastDataPacketTimestamp_ == 0U) {
         lastDataPacketTimestamp_ = timestamp;
@@ -60,29 +55,28 @@ void SleepChecker::CheckSleep(const uint64_t timestamp, const int64_t runtimeUs)
 
     double runtimeMs = runtimeUs / 1e3;    // us -> ms
     LOG_DEBUG << "run time ms = " << runtimeMs;
-    
+
     // if package difference is used make sure timestamp is >= last timestamp
     // do not run into uint64 overflow because of negative window
-    if (sleepTime_ == -1 &&
-        (timestamp >= lastDataPacketTimestamp_)) {
-
-        // time sleep according to data packet (add check that no backward jumps?)
+    if (sleepTime_ == -1 && (timestamp >= lastDataPacketTimestamp_)) {
+        // time sleep according to data packet (add check that no backward
+        // jumps?)
         auto diffBetweenSamples = timestamp - lastDataPacketTimestamp_;
         LOG_DEBUG << "according to data packet diff, sleeping "
                   << diffBetweenSamples << " ms.";
 
         double sleepTimeS =
-            (static_cast<double>(diffBetweenSamples) - runtimeMs) / 1e3; // ms -> s
+            (static_cast<double>(diffBetweenSamples) - runtimeMs) /
+            1e3;    // ms -> s
 
         PreciseSleep(sleepTimeS);
-    }
-    else if (sleepTime_ > 0) {
-
+    } else if (sleepTime_ > 0) {
         // apply manual sleep
-        double sleepTimeS = (static_cast<double>(sleepTime_) - runtimeMs) / 1e3; // ms -> s
+        double sleepTimeS =
+            (static_cast<double>(sleepTime_) - runtimeMs) / 1e3;    // ms -> s
 
         PreciseSleep(sleepTimeS);
-    } // else as fast as possible (no sleep at all)
+    }    // else as fast as possible (no sleep at all)
 
     // update timestamp
     lastDataPacketTimestamp_ = timestamp;

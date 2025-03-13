@@ -15,8 +15,7 @@ namespace packethandler {
  * to the desired destination via boost sockets
  */
 class PacketHandler {
-    public:
-
+   public:
     explicit PacketHandler(const common::config& cfg);
     ~PacketHandler();
 
@@ -35,7 +34,8 @@ class PacketHandler {
      *       the sender is ready to send data via Send(...) function
      *       false if the sender could not be added
      */
-    bool AddSender(const common::ProtocolType& protocol, const std::string& ip, const uint16_t port);
+    bool AddSender(const common::ProtocolType& protocol, const std::string& ip,
+                   const uint16_t port);
 
     /*
      * Send data to the desired destination
@@ -50,8 +50,7 @@ class PacketHandler {
     int64_t Send(const common::ProtocolType& protocol, const uint16_t port,
                  const uint8_t* data, const uint16_t size);
 
-    private:
-
+   private:
     /*
      * Check if the member variables of the port and protocol
      * are set to default values if not, return the values
@@ -64,8 +63,8 @@ class PacketHandler {
      *    first: the protocol to use
      *   second: the port to use
      */
-    inline std::pair <common::ProtocolType, uint16_t> CheckPortAndProtocol(
-                            const common::ProtocolType& protocol, const uint16_t port) {
+    inline std::pair<common::ProtocolType, uint16_t> CheckPortAndProtocol(
+        const common::ProtocolType& protocol, const uint16_t port) {
         return {(static_protocol_type_ == common::INIT_PROTOCOL_TYPE)
                     ? protocol
                     : static_protocol_type_,
@@ -73,14 +72,14 @@ class PacketHandler {
     }
 
     // for each protocol and port we have a DataSender
-    std::unordered_map<common::ProtocolType, std::unordered_map<uint16_t, sender::DataSender*>> senders_;
+    std::unordered_map<common::ProtocolType,
+                       std::unordered_map<uint16_t, sender::DataSender*>>
+        senders_;
 
     // any value specified from config
     // will be statically set for all senders
     uint16_t static_port_;
     common::ProtocolType static_protocol_type_;
-
-
 };
 
-}    // namespace handler
+}    // namespace packethandler

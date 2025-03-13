@@ -2,9 +2,8 @@
 
 using namespace packethandler;
 
-PacketHandler::PacketHandler(const common::config& cfg) 
+PacketHandler::PacketHandler(const common::config& cfg)
     : static_port_(cfg.port), static_protocol_type_(cfg.protocol) {
-
     if (static_port_ != common::INIT_PORT) {
         LOG_INFO << "port persistently set to " << static_port_;
     }
@@ -13,17 +12,12 @@ PacketHandler::PacketHandler(const common::config& cfg)
         LOG_INFO << "protocol type persistently set to "
                  << static_cast<int32_t>(static_protocol_type_);
     }
-
 }
 
-PacketHandler::~PacketHandler() { 
-    CleanMap(); 
-}
+PacketHandler::~PacketHandler() { CleanMap(); }
 
 bool PacketHandler::AddSender(const common::ProtocolType& protocol,
-                              const std::string& ip,
-                              const uint16_t port) {
-
+                              const std::string& ip, const uint16_t port) {
     // check if dynamic parameters from packet are supposed to be used or
     // statically set
     auto check = CheckPortAndProtocol(protocol, port);
@@ -35,7 +29,6 @@ bool PacketHandler::AddSender(const common::ProtocolType& protocol,
         // sender already there
         return true;
     }
-
 
     // note that we could do some checks here whether the ip is valid etc
     // but we let the sockets decide whether or not the parameters are valid
@@ -49,22 +42,20 @@ bool PacketHandler::AddSender(const common::ProtocolType& protocol,
         senders_[check.first][check.second]->Shutdown();
         delete senders_[check.first][check.second];
         senders_[check.first][check.second] = nullptr;
-        LOG_DEBUG << "ERROR: Init() of protocol " 
-            << static_cast<int32_t>(check.first) << " and " 
-            << ip << ":" << check.second << " failed.";
+        LOG_DEBUG << "ERROR: Init() of protocol "
+                  << static_cast<int32_t>(check.first) << " and " << ip << ":"
+                  << check.second << " failed.";
     } else {
-        LOG_DEBUG << "Sender added for protocol. Init of protocol " 
-            << static_cast<int32_t>(check.first) << " and " 
-            << ip << ":" << check.second << " returned: " << rc;
+        LOG_DEBUG << "Sender added for protocol. Init of protocol "
+                  << static_cast<int32_t>(check.first) << " and " << ip << ":"
+                  << check.second << " returned: " << rc;
     }
     return rc;
 }
 
-
 int64_t PacketHandler::Send(const common::ProtocolType& protocol,
-                            const uint16_t port,
-                            const uint8_t* data, const uint16_t size) {
-
+                            const uint16_t port, const uint8_t* data,
+                            const uint16_t size) {
     auto check = CheckPortAndProtocol(protocol, port);
 
     // check if sender has been initialized

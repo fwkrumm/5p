@@ -2,16 +2,15 @@
 
 using namespace sender;
 
-DataSender::DataSender(common::ProtocolType protocol,
-                       const std::string& ip,
+DataSender::DataSender(common::ProtocolType protocol, const std::string& ip,
                        const uint16_t port)
-            : protocol_(protocol),
-            ip_(ip),
-            port_(port),
-            io_context_(),
-            udp_socket_(io_context_),
-            tcp_socket_(io_context_),
-            initialized_ (false){}
+    : protocol_(protocol),
+      ip_(ip),
+      port_(port),
+      io_context_(),
+      udp_socket_(io_context_),
+      tcp_socket_(io_context_),
+      initialized_(false) {}
 
 bool DataSender::Init() {
     try {
@@ -26,9 +25,10 @@ bool DataSender::Init() {
                 boost::asio::ip::address::from_string(ip_), port_);
             tcp_socket_.connect(tcp_endpoint_);
         } else {
-            // we use debug level here since this might be intentional for testing (?)
-            LOG_DEBUG
-                << "no valid protocol selected. For " << ip_ << ":" << port_ << ". Data will not be forwarded.";
+            // we use debug level here since this might be intentional for
+            // testing (?)
+            LOG_DEBUG << "no valid protocol selected. For " << ip_ << ":"
+                      << port_ << ". Data will not be forwarded.";
             return false;
         }
 
@@ -58,7 +58,7 @@ int64_t DataSender::Send(const uint8_t* data, const uint16_t size) {
         return static_cast<int64_t>(SendTcp_(data, size));
     }
 
-    return -1; // no suitable socket opened and initialized
+    return -1;    // no suitable socket opened and initialized
 }
 
 void DataSender::Shutdown() {
@@ -67,16 +67,16 @@ void DataSender::Shutdown() {
         if (udp_socket_.is_open()) {
             LOG_DEBUG << "try closing udp on " << port_;
             // is the following necessary?
-            //udp_socket_.shutdown(boost::asio::ip::udp::socket::shutdown_send);
+            // udp_socket_.shutdown(boost::asio::ip::udp::socket::shutdown_send);
             udp_socket_.close();
         }
         if (tcp_socket_.is_open()) {
             LOG_DEBUG << "try closing tcp on " << port_;
             // is the following necessary?
-            //tcp_socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send);
+            // tcp_socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send);
             tcp_socket_.close();
         }
-        
+
     } catch (std::exception& e) {
         LogError_("Error during Shutdown of Datasender.", e.what());
     }
@@ -87,15 +87,13 @@ void DataSender::Shutdown() {
     initialized_ = false;
 }
 
-DataSender::~DataSender() { 
-    Shutdown();
-}
+DataSender::~DataSender() { Shutdown(); }
 
 size_t DataSender::SendUdp_(const uint8_t* data, const uint16_t size) {
     try {
         auto rc =
             udp_socket_.send_to(boost::asio::buffer(data, size), udp_endpoint_);
-        LOG_DEBUG << "UDP data on " << ip_ << ":" << port_ 
+        LOG_DEBUG << "UDP data on " << ip_ << ":" << port_
                   << " sent successfully, rc : " << rc;
         return rc;
     } catch (std::exception& e) {

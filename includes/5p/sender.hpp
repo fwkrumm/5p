@@ -2,20 +2,19 @@
 
 #define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
-#include <string>
 #include <boost/asio.hpp>
+#include <string>
 
 #include "5p/common.hpp"
 #include "5p/pcapreader.hpp"
 
 namespace sender {
 
-
 /*
- * wrapper class to unify tcp and udp socket logic 
+ * wrapper class to unify tcp and udp socket logic
  */
 class DataSender {
-    public:
+   public:
     /*
      * Constructor
      * @param protocol: protocol type to use
@@ -36,7 +35,7 @@ class DataSender {
     bool Init();
 
     /*
-     * return if sender is initialized 
+     * return if sender is initialized
      */
     const bool IsInitialized() const;
 
@@ -60,7 +59,7 @@ class DataSender {
      */
     ~DataSender();
 
-    private:
+   private:
     /*
      * Send data over UDP
      * @param data: data to send

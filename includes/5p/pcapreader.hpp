@@ -2,8 +2,10 @@
 
 #define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
+#include <pcapplusplus/IPReassembly.h>
 #include <pcapplusplus/IPv4Layer.h>
 #include <pcapplusplus/IPv6Layer.h>
+#include <pcapplusplus/Logger.h>
 #include <pcapplusplus/Packet.h>
 #include <pcapplusplus/PayloadLayer.h>
 #include <pcapplusplus/PcapFileDevice.h>
@@ -12,8 +14,6 @@
 #include <pcapplusplus/RawPacket.h>
 #include <pcapplusplus/TcpLayer.h>
 #include <pcapplusplus/UdpLayer.h>
-#include <pcapplusplus/IPReassembly.h>
-#include <pcapplusplus/Logger.h>
 
 #include <boost/filesystem.hpp>
 #include <iostream>
@@ -28,21 +28,20 @@ namespace pcapreader {
  * Reader class to read pcap files
  */
 class Reader {
-    private:
-
+   private:
     // reading of packes from pcap file
     pcpp::IFileReaderDevice* reader_;
 
     // for reassemble of fragmented packets
     pcpp::IPReassembly ip_reassembly_;
 
-    public:
-
+   public:
     /*
-      * Constructor
-      * @param verboseLogging: if true, debug logging is added for pcapplusplus library
-       * @return void
-    */
+     * Constructor
+     * @param verboseLogging: if true, debug logging is added for pcapplusplus
+     * library
+     * @return void
+     */
     explicit Reader(const bool verboseLogging = false);
     ~Reader();
 
@@ -88,4 +87,4 @@ class Reader {
     common::DataPacket ToDataPacket(pcpp::Packet& packet);
 };
 
-}    // namespace ppppp
+}    // namespace pcapreader
