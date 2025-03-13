@@ -194,3 +194,4 @@ This filter first checks for specific host and destination ip addresses and also
 - Add (more) unit tests, especially concerning packet reassembly
 - Use consistent code style
 - Is it possible to exclude Packet.dll and wpcap.dll from linking?
+- Add pipeline for version ranges e.g. new boost versions

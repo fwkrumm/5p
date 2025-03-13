@@ -23,7 +23,8 @@ int GetParameters(const int argc, char** const argv, common::config& cfg);
 
 /*
  * This function is a wrapper around CLI11_PARSE to catch if help was printed to
- * prevent program execution after help print. only for usage within GetParameters function
+ * prevent program execution after help print. only for usage within
+ * GetParameters function
  * @param app: CLI11 app object
  * @param argc: number of arguments
  * @param argv: arguments
