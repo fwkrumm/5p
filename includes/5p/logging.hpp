@@ -1,5 +1,6 @@
 #pragma once
 
+#include <5p/common.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/log/core.hpp>
 #include <boost/log/expressions.hpp>
@@ -12,8 +13,6 @@
 #include <boost/log/utility/setup/file.hpp>
 #include <chrono>
 #include <iostream>
-
-#include <5p/common.hpp>
 
 namespace logging = boost::log;
 namespace expr = boost::log::expressions;
@@ -54,11 +53,11 @@ namespace logging_5p {
 #endif
 
 /*
-* Set up logger with file and console sink. log level to file
-* is always debug, log level to console is set by parameter.
-* @param level: minimum log level to be logged
-* @return void
-*/
+ * Set up logger with file and console sink. log level to file
+ * is always debug, log level to console is set by parameter.
+ * @param level: minimum log level to be logged
+ * @return void
+ */
 static void SetUpLogger(common::LogLevel level) {
     int64_t timestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
                             std::chrono::system_clock::now().time_since_epoch())

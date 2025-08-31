@@ -2,8 +2,8 @@
 
 #define _SILENCE_STDEXT_ARR_ITERS_DEPRECATION_WARNING
 
-#include <iostream>
 #include <cstdint>
+#include <iostream>
 
 namespace common {
 
@@ -27,7 +27,7 @@ struct DataPacket {
     uint8_t* payload = nullptr;
     uint64_t timestamp = 0U;
     uint16_t port = 0U;
-    ProtocolType protocol = ProtocolType::PACKET_PROTOCOLS; // unspecified
+    ProtocolType protocol = ProtocolType::PACKET_PROTOCOLS;    // unspecified
 };
 
 // default values for config
@@ -68,7 +68,6 @@ struct config {
           skip(0U) {}
 };
 
-
 // LEGACY only used to identify protocol types when the target protocol
 // was determined by packet protocol. At the moment since the protocol
 // is determined by the user, this is not needed anymore.
@@ -86,4 +85,4 @@ pcpp::SLL, "SLL" }, { pcpp::PPPoE, "PPPoE" }, { pcpp::GRE, "GRE" }, { pcpp::SIP,
 };
 */
 
-} // namespace common
+}    // namespace common
