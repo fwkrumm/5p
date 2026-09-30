@@ -49,7 +49,7 @@ class PPPPP(ConanFile):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
-        cmake.ctest(cli_args=["--output-on-failure"])
+        cmake.ctest(cli_args=["--output-on-failure", "--verbose"])
         # add includes so that headers are found
         include1 = os.path.join(self.source_folder, "includes")
         # execute cpp check (we should check that cppcheck is available)
