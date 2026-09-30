@@ -78,7 +78,7 @@ conan install . --build=missing
 conan build . --build=missing
 ```
 
-The first command fetches all dependencies, and if they are not available, it tries to compile them. For this task, a CMake installation is required (check potential error logs).
+The first command fetches all dependencies, and if they are not available, it tries to compile them. For this task, a CMake (> 3.10) installation is required (check potential error logs).
 
 **IMPORTANT NOTE** if you create a solution and compile it manually by using an IDE of your choice make sure to use "Release" build type as some dependencies might not be available as Debug build type.
 
@@ -133,6 +133,18 @@ For more details check
 ```
 5p --help
 ```
+
+### Raw replay
+
+On an isolated network, inject captured Ethernet frames through a selected interface:
+
+```shell
+5p trace.pcapng --mode raw --interface eth0
+```
+
+Raw mode sends captured bytes without reassembly or socket forwarding and preserves packet order. It uses capture timestamps for pacing by default; `--sleep` overrides the interval in milliseconds, while `--skip` and `--filter` still apply. Raw mode requires `--interface` and rejects `--ip`, `--port`, and `--protocol`. Socket mode remains the default.
+
+Use an Ethernet capture with complete frames and an Ethernet output interface; other link types and truncated frames are rejected. Interface injection needs suitable permissions (typically root or capture privileges on Linux). Source/destination MAC and IP bytes are not rewritten: configure the test network, routes, and peers accordingly. A pcap trace alone cannot reproduce TCP endpoint state, missing captures, or exact wire timing; replaying both directions into one interface may not match the original topology. Windows runtime capture dependencies have Npcap licensing requirements.
 
 
 
