@@ -60,6 +60,10 @@ bool Reader::NextPackage(pcpp::Packet& packet) {
     return true;
 }
 
+bool Reader::NextRawPacket(pcpp::RawPacket& packet) {
+    return reader_->getNextPacket(packet);
+}
+
 bool Reader::checkFragmentation(pcpp::Packet& packet) {
     pcpp::IPv4Layer* ipv4Layer = packet.getLayerOfType<pcpp::IPv4Layer>();
 

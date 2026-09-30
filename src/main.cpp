@@ -41,6 +41,13 @@ int main(int argc, char** argv) {
             static_cast<int>(returns::ReturnCodes::INVALID_FILTER));
     }
 
+    if (config.mode == "raw") {
+        const int result = rawreplay::Replay(reader, config)
+                               ? static_cast<int>(returns::ReturnCodes::SUCCESS)
+                               : static_cast<int>(returns::ReturnCodes::RAW_REPLAY_FAILURE);
+        RETURN_WITH_CODE(result);
+    }
+
     /*
      * Create packet handler which forwards the data
      * via boost sockets to desired destination

@@ -22,6 +22,7 @@ set(SOURCE_FILES_5P
     src/cli.cpp
     src/sender.cpp
     src/pcapreader.cpp
+    src/rawreplay.cpp
     src/packethandler.cpp
     src/sleepchecker.cpp
 )
@@ -37,6 +38,7 @@ add_library(${PROJECT_NAME_LIB}
 add_executable(${TEST_NAME}
     tests/tests_main.cpp
     tests/tests_config.cpp
+    tests/tests_rawreplay.cpp
 )
 
 set(LIBRARIES_5P

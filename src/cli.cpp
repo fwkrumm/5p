@@ -3,8 +3,12 @@
 namespace cli {
 
 static int WrapReturnValue(CLI::App& app, const int argc, char** const argv) {
-    CLI11_PARSE(app, argc, argv);
-    return 0;    // if no parse error
+    try {
+        app.parse(argc, argv);
+        return 0;
+    } catch (const CLI::ParseError& error) {
+        return app.exit(error);
+    }
 }
 
 int GetParameters(const int argc, char** const argv, common::config& cfg) {
@@ -15,6 +19,11 @@ int GetParameters(const int argc, char** const argv, common::config& cfg) {
         ->required();
 
     // optional parameters
+    app.add_option("--mode", cfg.mode, "replay mode: socket or raw")
+        ->check(CLI::IsMember({"socket", "raw"}));
+    app.add_option("--interface", cfg.interfaceName,
+                   "network interface for raw replay");
+
     app.add_option("--ip", cfg.ip,
                    "ip address to forward data. Default is " + cfg.ip);
 
@@ -50,7 +59,11 @@ int GetParameters(const int argc, char** const argv, common::config& cfg) {
                        std::to_string(cfg.skip));
 
     // prase commands
-    auto rc = WrapReturnValue(app, argc, argv);
+    const int rc = WrapReturnValue(app, argc, argv);
+
+    if (rc != 0) {
+        return rc;
+    }
 
     if (app.get_help_ptr()->count() > 0) {
         // prevent program execution after help print.
@@ -58,8 +71,20 @@ int GetParameters(const int argc, char** const argv, common::config& cfg) {
         return -1;
     }
 
-    // return cli 11 parse error code or 0 if no parse error occured
-    return rc;
+    if (cfg.mode == "raw") {
+        if (cfg.interfaceName.empty() || app.get_option("--ip")->count() > 0 ||
+            app.get_option("--port")->count() > 0 ||
+            app.get_option("--protocol")->count() > 0) {
+            LOG_ERROR << "raw mode requires --interface and rejects --ip, "
+                         "--port, and --protocol";
+            return 1;
+        }
+    } else if (app.get_option("--interface")->count() > 0) {
+        LOG_ERROR << "--interface requires --mode raw";
+        return 1;
+    }
+
+    return 0;
 }
 
 }    // namespace cli

@@ -44,7 +44,7 @@ class PPPPP(ConanFile):
         self.run(f"cppcheck --enable=all {self.source_folder} "\
                 f"-I {include1} "\
                 "--check-level=exhaustive "\
-                "--suppress=missingIncludeSystem -i .git/ -i build/ -i bin/")
+                "--suppress=missingIncludeSystem -i .git/ -i .venv/ -i build/ -i bin/")
 
 
     def package(self):
