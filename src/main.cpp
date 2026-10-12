@@ -26,6 +26,11 @@ int main(int argc, char** argv) {
 
     logging_5p::SetUpLogger(config.level);
 
+    if (config.listRawInterfaces) {
+        rawreplay::ListRawInterfaces();
+        RETURN_WITH_CODE(static_cast<int>(returns::ReturnCodes::SUCCESS));
+    }
+
     /*
      * Create reader and apply filter if specified; if trace level is specified,
      * enable debug logging for pcapplusplus library

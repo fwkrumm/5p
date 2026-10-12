@@ -85,6 +85,27 @@ std::vector<uint8_t> CapturedTcpPayload(const std::string& capture, const std::s
 
 }  // namespace
 
+TEST(RawInterfaceListing, LogsAndExitsWithoutReadingCapture) {
+    testing::internal::CaptureStdout();
+    testing::internal::CaptureStderr();
+    const int standaloneStatus = RunReplay({"--list-raw-interfaces"});
+    const int captureStatus = RunReplay({"nonexistent-listing-test.pcap", "--list-raw-interfaces",
+                                         "--mode", "raw", "--filter", "not a valid filter"});
+    const std::string output = testing::internal::GetCapturedStdout() +
+                               testing::internal::GetCapturedStderr();
+    EXPECT_EQ(standaloneStatus, 0);
+    EXPECT_EQ(captureStatus, 0);
+#ifdef __linux__
+    for (const char* pseudoDevice : {"nflog", "nfqueue", "NFULNL_CFG_CMD", "NFQNL_CFG_CMD"}) {
+        EXPECT_EQ(output.find(pseudoDevice), std::string::npos) << output;
+    }
+#endif
+    EXPECT_NE(output.find("info"), std::string::npos);
+    const auto firstSummary = output.find("available raw replay interfaces:");
+    ASSERT_NE(firstSummary, std::string::npos);
+    EXPECT_NE(output.find("available raw replay interfaces:", firstSummary + 1), std::string::npos);
+}
+
 TEST(SampleReplay, SendsChargenUdpDatagramsToLoopback) {
     const std::string capture = CaptureFile("chargen-udp.pcap");
     const auto expected = CapturedPayloads(capture, "udp");

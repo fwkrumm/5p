@@ -25,6 +25,39 @@ TEST(ReplayMode, DefaultKeepsSocketMode) {
     EXPECT_EQ(Parse({"5p", "trace.pcapng"}, config), 0);
     EXPECT_EQ(config.mode, "socket");
     EXPECT_TRUE(config.interfaceName.empty());
+    EXPECT_FALSE(config.listRawInterfaces);
+}
+
+TEST(ReplayMode, ListingInterfacesNeedsNoCapture) {
+    common::config config;
+    EXPECT_EQ(Parse({"5p", "--list-raw-interfaces"}, config), 0);
+    EXPECT_TRUE(config.listRawInterfaces);
+    EXPECT_TRUE(config.path.empty());
+}
+
+TEST(ReplayMode, ListingInterfacesBypassesReplayRequirements) {
+    common::config config;
+    EXPECT_EQ(Parse({"5p", "--list-raw-interfaces", "--mode", "raw", "--ip", "127.0.0.1"}, config), 0);
+    EXPECT_TRUE(config.listRawInterfaces);
+}
+
+TEST(ReplayMode, ListingInterfacesAcceptsCaptureAndLogLevel) {
+    common::config config;
+    EXPECT_EQ(Parse({"5p", "missing.pcap", "--list-raw-interfaces", "--level", "2"}, config), 0);
+    EXPECT_TRUE(config.listRawInterfaces);
+    EXPECT_EQ(config.path, "missing.pcap");
+    EXPECT_EQ(config.level, common::LogLevel::INFO_LEVEL);
+}
+
+TEST(ReplayMode, ReplayStillRequiresCapture) {
+    common::config config;
+    EXPECT_NE(Parse({"5p"}, config), 0);
+    EXPECT_FALSE(config.listRawInterfaces);
+}
+
+TEST(ReplayMode, HelpStillNeedsNoCapture) {
+    common::config config;
+    EXPECT_EQ(Parse({"5p", "--help"}, config), -1);
 }
 
 TEST(ReplayMode, RawRequiresInterface) {
@@ -55,6 +88,13 @@ TEST(ReplayMode, SocketRejectsInterface) {
 TEST(ReplayMode, RejectsUnknownMode) {
     common::config config;
     EXPECT_NE(Parse({"5p", "trace.pcapng", "--mode", "unknown"}, config), 0);
+}
+
+TEST(RawReplay, InterfaceCompatibilityUsesLinkType) {
+    EXPECT_TRUE(rawreplay::IsReplayableInterface(pcpp::LINKTYPE_ETHERNET));
+    EXPECT_FALSE(rawreplay::IsReplayableInterface(pcpp::LINKTYPE_RAW));
+    EXPECT_FALSE(rawreplay::IsReplayableInterface(pcpp::LINKTYPE_NULL));
+    EXPECT_FALSE(rawreplay::IsReplayableInterface(pcpp::LINKTYPE_LINUX_SLL));
 }
 
 TEST(RawReplay, PreservesCompleteEthernetFrame) {

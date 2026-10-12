@@ -14,11 +14,12 @@ static int WrapReturnValue(CLI::App& app, const int argc, char** const argv) {
 int GetParameters(const int argc, char** const argv, common::config& cfg) {
     CLI::App app{"Parameters"};
 
-    // mandatory parameters
-    app.add_option("path_to_pcap_file", cfg.path, "path to pcap(ng) file")
-        ->required();
+    app.add_option("path_to_pcap_file", cfg.path,
+                   "path to pcap(ng) file (required unless listing interfaces)");
 
     // optional parameters
+    app.add_flag("--list-raw-interfaces", cfg.listRawInterfaces,
+                 "log available Ethernet interfaces for raw replay and exit");
     app.add_option("--mode", cfg.mode, "replay mode: socket or raw")
         ->check(CLI::IsMember({"socket", "raw"}));
     app.add_option("--interface", cfg.interfaceName,
@@ -69,6 +70,14 @@ int GetParameters(const int argc, char** const argv, common::config& cfg) {
         // prevent program execution after help print.
         // NOTE that also CLI11_PARSE might return -1
         return -1;
+    }
+
+    if (cfg.listRawInterfaces) {
+        return 0;
+    }
+
+    if (cfg.path.empty()) {
+        return app.exit(CLI::RequiredError("path_to_pcap_file"));
     }
 
     if (cfg.mode == "raw") {

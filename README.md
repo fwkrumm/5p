@@ -136,6 +136,18 @@ For more details check
 
 ### Raw replay
 
+List available interfaces compatible with raw replay:
+
+```shell
+5p --list-raw-interfaces
+```
+
+This logs each interface name and description at INFO level (`LOG_INFO`), followed by the number of compatible interfaces, then exits successfully without opening a capture or replaying packets. No capture path, `--mode raw`, or `--interface` is required. If a capture path is supplied, it is ignored. `--level` still controls console logging; levels above INFO hide the list from the console, but it remains in the log file. An empty list is reported with a count of zero and a successful exit.
+
+Compatibility is determined by opening each PcapPlusPlus interface and checking its Ethernet link type, not by its name or whether it is physical. Virtual Ethernet adapters, including Windows Hyper-V `vEthernet` interfaces, are included when they can be opened and report an Ethernet link type. Interfaces that cannot be opened are skipped with a warning; non-Ethernet interfaces are omitted. Listing closes the probed interfaces and sends no packets. Run with suitable capture permissions to discover all accessible interfaces. On Windows, use the exact logged device name for `--interface`; the description can identify the corresponding adapter. Ethernet compatibility does not guarantee that the driver or network permits packet injection.
+
+On Linux, only kernel network interfaces are probed. Capture-only pseudo devices such as `any`, `nflog`, and `nfqueue` are skipped before opening, avoiding Netfilter permission errors and configuration changes. Loopback interfaces remain eligible if they report an Ethernet link type; virtual Ethernet interfaces are not excluded.
+
 On an isolated network, inject captured Ethernet frames through a selected interface:
 
 ```shell

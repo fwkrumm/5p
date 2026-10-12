@@ -5,6 +5,10 @@
 #include <chrono>
 #include <thread>
 
+#ifdef __linux__
+#include <net/if.h>
+#endif
+
 namespace rawreplay {
 namespace {
 
@@ -30,9 +34,36 @@ void WaitForPacket(const pcpp::RawPacket& packet, const timespec& firstTimestamp
 
 }    // namespace
 
+bool IsReplayableInterface(pcpp::LinkLayerType linkType) {
+    return linkType == pcpp::LINKTYPE_ETHERNET;
+}
+
+void ListRawInterfaces() {
+    uint64_t count = 0;
+    for (auto* device : pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDevicesList()) {
+#ifdef __linux__
+        if (if_nametoindex(device->getName().c_str()) == 0) {
+            continue;
+        }
+#endif
+        if (!device->open()) {
+            LOG_WARNING << "cannot open raw replay interface " << device->getName();
+            continue;
+        }
+        const bool compatible = IsReplayableInterface(device->getLinkType());
+        device->close();
+        if (compatible) {
+            LOG_INFO << "raw replay interface: " << device->getName()
+                     << " (" << device->getDesc() << ")";
+            ++count;
+        }
+    }
+    LOG_INFO << "available raw replay interfaces: " << count;
+}
+
 bool IsReplayableFrame(const pcpp::RawPacket& packet, pcpp::LinkLayerType deviceLinkType) {
     return packet.getLinkLayerType() == pcpp::LINKTYPE_ETHERNET &&
-           deviceLinkType == pcpp::LINKTYPE_ETHERNET &&
+           IsReplayableInterface(deviceLinkType) &&
            packet.getRawDataLen() > 0 &&
            packet.getFrameLength() <= packet.getRawDataLen();
 }

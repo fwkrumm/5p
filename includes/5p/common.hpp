@@ -42,6 +42,7 @@ struct config {
 
     std::string mode = "socket";
     std::string interfaceName;
+    bool listRawInterfaces = false;
 
     // ip address and port to send data to
     std::string ip;
