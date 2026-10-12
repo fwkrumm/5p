@@ -115,7 +115,7 @@ Change the protocol, `2 --> UDP; 1 --> TCP`, i.e. all packets will be forwarde t
 
 Of course you can combine this parameters, e.g. to forward all packets via UDP on port `49999` you can use
 ```
-5p /path/to/test/trace.pcapng --protocol 2 -- port 49999
+5p /path/to/test/trace.pcapng --protocol 2 --port 49999
 ```
 
 
