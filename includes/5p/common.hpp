@@ -40,6 +40,10 @@ struct config {
     // path to pcap(ng) file
     std::string path;
 
+    std::string mode = "socket";
+    std::string interfaceName;
+    bool listRawInterfaces = false;
+
     // ip address and port to send data to
     std::string ip;
     uint16_t port;

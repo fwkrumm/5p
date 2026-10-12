@@ -22,6 +22,7 @@ set(SOURCE_FILES_5P
     src/cli.cpp
     src/sender.cpp
     src/pcapreader.cpp
+    src/rawreplay.cpp
     src/packethandler.cpp
     src/sleepchecker.cpp
 )
@@ -37,7 +38,18 @@ add_library(${PROJECT_NAME_LIB}
 add_executable(${TEST_NAME}
     tests/tests_main.cpp
     tests/tests_config.cpp
+    tests/tests_rawreplay.cpp
 )
+
+if (UNIX)
+    add_executable(5p_integration_tests tests/integration/replay.cpp)
+    add_dependencies(5p_integration_tests 5p)
+    target_link_libraries(5p_integration_tests gtest::gtest boost::boost PcapPlusPlus::PcapPlusPlus)
+    target_compile_definitions(5p_integration_tests PRIVATE
+        REPLAY_EXECUTABLE="$<TARGET_FILE:5p>"
+        CAPTURE_PATH="${CMAKE_SOURCE_DIR}/resources/tests/hart_ip.pcap"
+    )
+endif()
 
 set(LIBRARIES_5P
     CLI11::CLI11
@@ -80,3 +92,7 @@ include_directories(
 
 enable_testing()
 add_test(NAME "5p_tests" COMMAND ${TEST_NAME})
+if (UNIX)
+    add_test(NAME "5p_integration_tests" COMMAND 5p_integration_tests)
+    set_tests_properties("5p_integration_tests" PROPERTIES TIMEOUT 15)
+endif()

@@ -60,6 +60,10 @@ bool Reader::NextPackage(pcpp::Packet& packet) {
     return true;
 }
 
+bool Reader::NextRawPacket(pcpp::RawPacket& packet) {
+    return reader_->getNextPacket(packet);
+}
+
 bool Reader::checkFragmentation(pcpp::Packet& packet) {
     pcpp::IPv4Layer* ipv4Layer = packet.getLayerOfType<pcpp::IPv4Layer>();
 
@@ -145,6 +149,11 @@ common::DataPacket Reader::ToDataPacket(pcpp::Packet& packet) {
             static_cast<uint16_t>(payloadLayer->getPayloadLen());
 
         LOG_DEBUG << "extracted payload of size " << dataPacket.payloadLength;
+    } else if (auto* udpLayer = packet.getLayerOfType<pcpp::UdpLayer>();
+               udpLayer != nullptr && udpLayer->getLayerPayloadSize() > 0) {
+        dataPacket.payload = udpLayer->getLayerPayload();
+        dataPacket.payloadLength = static_cast<uint16_t>(udpLayer->getLayerPayloadSize());
+        LOG_DEBUG << "extracted UDP payload of size " << dataPacket.payloadLength;
     } else {
         LOG_WARNING << "no payload layer found.";
     }

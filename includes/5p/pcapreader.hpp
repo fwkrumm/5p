@@ -78,6 +78,8 @@ class Reader {
      */
     bool NextPackage(pcpp::Packet& packet);
 
+    bool NextRawPacket(pcpp::RawPacket& packet);
+
     /*
      * Get DataPacket from pcpp_packet
      * @param packet: the pcpp packet

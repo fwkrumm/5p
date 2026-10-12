@@ -8,6 +8,7 @@
 #include "5p/logging.hpp"
 #include "5p/packethandler.hpp"
 #include "5p/pcapreader.hpp"
+#include "5p/rawreplay.hpp"
 #include "5p/sender.hpp"
 #include "5p/sleepchecker.hpp"
 
@@ -20,7 +21,8 @@ enum class ReturnCodes {
     MISSING_PARAMETERS = 1,
     PCAP_FILE_NOT_FOUND = 2,
     INVALID_FILTER = 3,
-    SOCKET_FAILURE = 4
+    SOCKET_FAILURE = 4,
+    RAW_REPLAY_FAILURE = 5
 };
 
 }    // namespace returns
